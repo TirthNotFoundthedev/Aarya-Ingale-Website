@@ -1,0 +1,188 @@
+:root {
+  /* Palette: SPEC.md → Visual language */
+  --blush: #f7e4e7;
+  --rani: #d6246e;
+  --pink-soft: #f28bb3;
+  --plum: #4a1530;
+  --gold: #e9c46a;
+  --paithani: #17563f;
+  --paithani-deep: #0e3b2e;
+  --magenta: #c2185b;
+
+  /* Fonts: SPEC.md → Visual language */
+  --font-name: 'Allura', cursive;
+  --font-title: 'Yatra One', serif;
+  --font-label: 'Rozha One', serif;
+  --font-body: 'Lora', Georgia, serif;
+  --font-bubble: 'Kalam', cursive;
+
+  --paper-shadow: 0 2px 3px rgb(74 21 48 / 0.18), 0 6px 14px rgb(74 21 48 / 0.12);
+  --gutter: clamp(1.25rem, 5vw, 4rem);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--blush);
+  color: var(--plum);
+  font-family: var(--font-body);
+  font-size: 100%;
+  line-height: 1.6;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  /* Faint paper grain over the blush. */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .29 0 0 0 0 .08 0 0 0 0 .19 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+/* Text still waiting for a real fact in content.js. */
+.todo {
+  outline: 2px dashed var(--magenta);
+  outline-offset: 3px;
+  background: rgb(242 139 179 / 0.25);
+}
+
+/* ---------- Scenes ---------- */
+
+.scene {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100svh;
+  padding: var(--gutter);
+  overflow: hidden;
+}
+
+.scene-title {
+  margin: 0 0 1rem;
+  font-family: var(--font-title);
+  font-weight: 400;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  line-height: 1.15;
+  color: var(--rani);
+}
+
+.body {
+  max-width: 34rem;
+  margin: 0 0 0.75rem;
+  font-size: clamp(1rem, 1.6vw, 1.15rem);
+}
+
+.label {
+  font-family: var(--font-label);
+  font-weight: 400;
+}
+
+/* Hero */
+
+.scene--hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding-bottom: 0;
+}
+
+.hero-heading {
+  position: relative;
+  z-index: 1;
+}
+
+.hero-greeting {
+  margin: 0;
+  font-family: var(--font-label);
+  font-size: clamp(1.25rem, 3vw, 2rem);
+  color: var(--plum);
+}
+
+.hero-name {
+  margin: 0;
+  font-family: var(--font-name);
+  font-weight: 400;
+  font-size: clamp(4rem, 13vw, 9rem);
+  line-height: 1;
+  color: var(--rani);
+}
+
+.portrait--hero {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  translate: -50% 0;
+  width: min(90vw, 55svh, 40rem);
+}
+
+/* Now, Interests & Skills, Socials: content on the left for now. */
+
+.now-facts {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.25rem 1rem;
+  max-width: 34rem;
+  margin: 0 0 1.25rem;
+}
+
+.now-facts dt {
+  font-family: var(--font-label);
+  color: var(--paithani);
+}
+
+.now-facts dd {
+  margin: 0;
+}
+
+.arc-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  max-width: 40rem;
+  margin: 1rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.arc-list li {
+  display: flex;
+  flex-direction: column;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: var(--paper-shadow);
+}
+
+.arc-list--skills li {
+  background: var(--paithani);
+  color: var(--blush);
+}
+
+.arc-list .detail {
+  font-size: 0.85rem;
+}
+
+.arc-list a {
+  color: var(--rani);
+  text-decoration: none;
+}
+
+.arc-list a:hover,
+.arc-list a:focus-visible {
+  text-decoration: underline;
+  text-decoration-color: var(--gold);
+  text-decoration-thickness: 2px;
+}
+
+:focus-visible {
+  outline: 3px solid var(--paithani);
+  outline-offset: 3px;
+}

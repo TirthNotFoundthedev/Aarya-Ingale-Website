@@ -1,0 +1,351 @@
+<!doctype html>
+<!--
+  PROTOTYPE (throwaway). Question: what should the site LOOK like?
+  Four visual directions for the Hero, switchable via ?variant=A|B|C|D and the bottom bar (or ← →).
+  The layout is fixed by the user's hero sketch; only the visual language changes.
+  The portrait is a placeholder drawn in code. The real one will be AI-made.
+  Open by double-clicking this file.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aarya: visual language prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Allura&family=Baloo+2:wght@500;800&family=Cormorant+Garamond:ital,wght@1,500&family=Great+Vibes&family=Kalam:wght@400;700&family=Pacifico&family=Rozha+One&family=Yatra+One&family=Dancing+Script:wght@700&family=Kaushan+Script&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; }
+  html, body { background: var(--bg); color: var(--ink); }
+  body { height: 320vh; font-family: system-ui, sans-serif; transition: background .4s; }
+  .stage { position: fixed; inset: 0; overflow: hidden; background: var(--bgImage, none), var(--bg); }
+  .texture { position: absolute; inset: 0; pointer-events: none; opacity: var(--texture, 0); mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .55  0 0 0 0 .45  0 0 0 0 .4  0 0 0 .55 0'/></filter><rect width='240' height='240' filter='url(%23n)'/></svg>"); }
+  .headline { position: absolute; top: clamp(28px, 7vh, 72px); left: 0; right: 0; text-align: center; z-index: 2; padding: 0 16px; }
+  .hi { font-family: var(--hiFont); color: var(--hiColor); font-size: clamp(22px, 3.4vw, 40px); letter-spacing: .02em; }
+  .name { font-family: var(--nameFont); color: var(--nameColor); font-size: clamp(46px, 8.4vw, 112px); line-height: 1.05; text-shadow: var(--nameShadow, none); display: block; }
+  svg.scene { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); height: min(78vh, 74vw); width: auto; overflow: visible; }
+  @media (max-aspect-ratio: 3/4) { svg.scene { height: 64vh; } .headline { top: 9vh; } }
+  .hint { position: absolute; right: 18px; top: 50%; writing-mode: vertical-rl; font: 12px/1 system-ui; letter-spacing: .2em; text-transform: uppercase; opacity: .5; color: var(--ink); }
+  @media (max-aspect-ratio: 3/4) { .hint { display: none; } }
+
+  /* rig */
+  .portrait { cursor: pointer; }
+  .eye { transform-box: fill-box; transform-origin: center; transition: transform .07s; }
+  .blink .eye { transform: scaleY(.08); }
+  .earring { transform-box: fill-box; transform-origin: 50% 0; }
+  .swing .earring { animation: swing 1.6s cubic-bezier(.3,.6,.4,1); }
+  @keyframes swing { 0%{transform:rotate(0)} 12%{transform:rotate(24deg)} 30%{transform:rotate(-17deg)} 48%{transform:rotate(10deg)} 66%{transform:rotate(-5deg)} 84%{transform:rotate(2deg)} 100%{transform:rotate(0)} }
+  .sparkle { opacity: 0; transform-box: fill-box; transform-origin: center; }
+  .swing .sparkle { animation: sparkle 1.1s ease-out; }
+  .swing .sparkle.s2 { animation-delay: .25s; }
+  @keyframes sparkle { 0%{opacity:0;transform:scale(.2) rotate(0)} 30%{opacity:1;transform:scale(1.15) rotate(30deg)} 100%{opacity:0;transform:scale(.4) rotate(90deg)} }
+  .bubble { opacity: 0; transform-box: fill-box; transform-origin: 100% 100%; transform: scale(.3); transition: opacity .2s, transform .35s cubic-bezier(.3,1.6,.5,1); }
+  .talk .bubble { opacity: 1; transform: scale(1); }
+
+  /* prototype chrome: deliberately not part of the design */
+  .bar { position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%); z-index: 10; display: flex; gap: 6px; align-items: center;
+    background: #111; color: #fff; border-radius: 999px; padding: 6px; font: 600 13px/1 system-ui; box-shadow: 0 6px 24px rgba(0,0,0,.35); white-space: nowrap; }
+  .bar button { all: unset; cursor: pointer; padding: 8px 12px; border-radius: 999px; background: #2a2a2a; }
+  .bar button:hover { background: #3a3a3a; }
+  .bar .label { padding: 0 8px; min-width: 190px; text-align: center; }
+  .panel { position: fixed; left: 14px; bottom: 64px; z-index: 10; width: 260px; background: #111; color: #eee; border-radius: 14px; padding: 14px; font: 12px/1.5 system-ui; box-shadow: 0 6px 24px rgba(0,0,0,.35); display: none; }
+  .panel.open { display: block; }
+  .panel h4 { font-size: 13px; margin-bottom: 6px; }
+  .swatches { display: flex; gap: 4px; margin: 8px 0; }
+  .swatches span { width: 30px; height: 30px; border-radius: 6px; border: 1px solid #ffffff33; }
+  .panel p { color: #aaa; }
+</style>
+</head>
+<body>
+<div class="stage" id="stage">
+  <div class="texture"></div>
+  <div class="headline"><span class="hi">Hi! I'm</span><span class="name" id="name">Aarya Ingale</span></div>
+  <div class="hint">scroll ↓ the ring turns</div>
+  <svg class="scene" id="scene" viewBox="0 0 1000 760" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="paper" x="-20%" y="-20%" width="140%" height="140%">
+        <feDropShadow dx="0" dy="6" stdDeviation="5" flood-color="#3a0a1e" flood-opacity=".35"/>
+      </filter>
+      <filter id="paperSoft" x="-20%" y="-20%" width="140%" height="140%">
+        <feDropShadow dx="0" dy="3" stdDeviation="2.5" flood-color="#000" flood-opacity=".3"/>
+      </filter>
+      <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+        <feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    <g id="mandala"></g>
+    <g id="portraitWrap"></g>
+  </svg>
+</div>
+
+<div class="panel" id="panel"></div>
+<div class="bar">
+  <button id="prev" aria-label="Previous variant">◀</button>
+  <span class="label" id="label"></span>
+  <button id="next" aria-label="Next variant">▶</button>
+  <button id="font" title="Try another font for the name">Aa ↻</button>
+  <button id="info" title="Palette and fonts">i</button>
+</div>
+
+<script>
+const CX = 500, CY = 470;
+
+/* ---------- variants ---------- */
+const VARIANTS = {
+  A: {
+    name: 'Paper Bandhani',
+    blurb: 'Light paper cut-outs with real shadows. Pink-led Bandhani dots, marigold accents. Handmade and warm.',
+    mode: 'paper', texture: .55,
+    bg: '#f7e4e7', ink: '#4a1530',
+    hiFont: "'Kalam', cursive", hiColor: '#b0175a',
+    fonts: ["'Yatra One', cursive", "'Kaushan Script', cursive", "'Dancing Script', cursive"], nameColor: '#4a1530',
+    swatches: ['#f7e4e7', '#d6246e', '#f28bb3', '#f2a516', '#2f7d4f', '#4a1530'],
+    halo: '#fbd3df',
+    portrait: { skin:'#c98a65', shade:'#ad6f4d', hair:'#2a1a1f', hairHi:'#4a2e36', top:'#2f7d4f', trim:'#f2a516', lip:'#a2384f', blush:'#e07a7a', white:'#fff6ef', iris:'#2b1810', earring:'#f2a516', line:'none', filter:'url(#paper)' },
+    bands: [
+      { kind:'fill', r1:250, r2:300, color:'#f28bb3' },
+      { kind:'motif', motif:'diamond', r:275, count:36, size:7, fill:'#fff6ef', accent:'#d6246e', speed:-1 },
+      { kind:'fill', r1:300, r2:332, color:'#f2a516' },
+      { kind:'motif', motif:'scallop', r:332, count:48, size:11, fill:'#f2a516', speed:1 },
+      { kind:'fill', r1:340, r2:420, color:'#d6246e' },
+      { kind:'motif', motif:'petal', r:385, count:24, size:26, fill:'#f28bb3', accent:'#fff6ef', speed:1 },
+      { kind:'motif', motif:'dot', r:410, count:72, size:3.2, fill:'#fff6ef', speed:1 },
+      { kind:'motif', motif:'dot', r:360, count:48, size:2.6, fill:'#fff6ef', speed:1 },
+      { kind:'fill', r1:420, r2:440, color:'#4a1530' },
+      { kind:'motif', motif:'triangle', r:440, count:60, size:12, fill:'#4a1530', speed:-0.6 },
+    ],
+  },
+  B: {
+    name: 'Midnight Mandala',
+    blurb: 'Dark night sky, glowing gold and pink line art. A clean illustration, not paper. Elegant and a bit dreamy.',
+    mode: 'line', texture: 0,
+    bg: '#150c22', bgImage: 'radial-gradient(circle at 50% 75%, #3a1a4a 0%, transparent 60%)', ink: '#f6e9ff',
+    hiFont: "'Cormorant Garamond', serif", hiColor: '#f4c27a',
+    fonts: ["'Great Vibes', cursive", "'Allura', cursive", "'Dancing Script', cursive"], nameColor: '#ff8fbf', nameShadow: '0 0 24px #ff5fa255',
+    swatches: ['#150c22', '#3a1a4a', '#e8b85c', '#ff8fbf', '#f6e9ff'],
+    halo: '#2a1538',
+    portrait: { skin:'#2a1838', shade:'#2a1838', hair:'#150c22', hairHi:'#150c22', top:'#1f2f2a', trim:'#e8b85c', lip:'#ff8fbf', blush:'none', white:'#f6e9ff', iris:'#150c22', earring:'#e8b85c', line:'#ff8fbf', filter:'url(#glow)' },
+    bands: [
+      { kind:'circle', r:250, stroke:'#e8b85c', w:1.5 },
+      { kind:'motif', motif:'petal', r:280, count:24, size:20, stroke:'#ff8fbf', speed:-1 },
+      { kind:'circle', r:312, stroke:'#e8b85c', w:1 },
+      { kind:'motif', motif:'diamond', r:330, count:40, size:6, stroke:'#e8b85c', speed:1 },
+      { kind:'circle', r:348, stroke:'#e8b85c', w:1 },
+      { kind:'motif', motif:'paisley', r:390, count:18, size:20, stroke:'#ff8fbf', speed:1 },
+      { kind:'motif', motif:'dot', r:368, count:72, size:1.8, fill:'#e8b85c', speed:1 },
+      { kind:'circle', r:430, stroke:'#e8b85c', w:1.5 },
+      { kind:'motif', motif:'scallop', r:440, count:56, size:10, stroke:'#e8b85c', speed:-0.6 },
+      { kind:'motif', motif:'dot', r:465, count:90, size:1.5, fill:'#ff8fbf', speed:-0.6 },
+    ],
+  },
+  C: {
+    name: 'Rangoli Pop',
+    blurb: 'Flat, bold illustration with no shadows. Hot pink, mustard and teal, with chunky petals like a rangoli. Loud and playful.',
+    mode: 'flat', texture: 0,
+    bg: '#fff1d6', ink: '#3b0a45',
+    hiFont: "'Baloo 2', sans-serif", hiColor: '#00a6a6',
+    fonts: ["'Pacifico', cursive", "'Kaushan Script', cursive", "'Yatra One', cursive"], nameColor: '#ff2e88',
+    swatches: ['#fff1d6', '#ff2e88', '#ffb000', '#00a6a6', '#3b0a45'],
+    halo: '#ffe0a3',
+    portrait: { skin:'#b97a55', shade:'#9c6242', hair:'#3b0a45', hairHi:'#5a1a66', top:'#00a6a6', trim:'#ffb000', lip:'#ff2e88', blush:'#ff6fa8', white:'#ffffff', iris:'#3b0a45', earring:'#ffb000', line:'none', filter:'none' },
+    bands: [
+      { kind:'motif', motif:'petal', r:300, count:16, size:52, fill:'#ff2e88', accent:'#ffb000', speed:-1 },
+      { kind:'fill', r1:250, r2:270, color:'#ffb000' },
+      { kind:'motif', motif:'dot', r:260, count:30, size:4.5, fill:'#3b0a45', speed:-1 },
+      { kind:'motif', motif:'lotus', r:395, count:16, size:30, fill:'#00a6a6', accent:'#fff1d6', speed:1 },
+      { kind:'motif', motif:'dot', r:440, count:40, size:7, fill:'#ffb000', speed:1 },
+      { kind:'motif', motif:'dot', r:462, count:56, size:4, fill:'#ff2e88', speed:-0.6 },
+    ],
+  },
+  D: {
+    name: 'Paithani Heirloom',
+    blurb: "Rich silk: deep green, magenta and gold zari. Peacock and temple borders from the Paithani, Maharashtra's own saree. Paper layers with soft shadows.",
+    mode: 'paper', texture: .25,
+    bg: '#0e3b2e', bgImage: 'radial-gradient(circle at 50% 80%, #17563f 0%, transparent 65%)', ink: '#fbe9c6',
+    hiFont: "'Rozha One', serif", hiColor: '#e9c46a',
+    fonts: ["'Allura', cursive", "'Great Vibes', cursive", "'Yatra One', cursive"], nameColor: '#ff9ac6',
+    swatches: ['#0e3b2e', '#17563f', '#c2185b', '#ff9ac6', '#e9c46a', '#fbe9c6'],
+    halo: '#c2185b',
+    portrait: { skin:'#c48a63', shade:'#a56d4a', hair:'#1b1012', hairHi:'#3a2226', top:'#c2185b', trim:'#e9c46a', lip:'#8e1f45', blush:'#d9706e', white:'#fff6ea', iris:'#23140e', earring:'#e9c46a', line:'none', filter:'url(#paperSoft)' },
+    bands: [
+      { kind:'fill', r1:250, r2:290, color:'#e9c46a' },
+      { kind:'motif', motif:'triangle', r:250, count:40, size:13, fill:'#c2185b', speed:-1, inward:true },
+      { kind:'motif', motif:'dot', r:278, count:40, size:3, fill:'#0e3b2e', speed:-1 },
+      { kind:'fill', r1:290, r2:400, color:'#ff9ac6' },
+      { kind:'motif', motif:'paisley', r:330, count:14, size:26, fill:'#0e3b2e', accent:'#e9c46a', speed:1 },
+      { kind:'motif', motif:'lotus', r:385, count:28, size:13, fill:'#c2185b', accent:'#e9c46a', speed:1 },
+      { kind:'fill', r1:400, r2:430, color:'#e9c46a' },
+      { kind:'motif', motif:'diamond', r:415, count:52, size:6, fill:'#c2185b', accent:'#fff6ea', speed:-0.6 },
+      { kind:'motif', motif:'triangle', r:430, count:44, size:20, fill:'#e9c46a', speed:-0.6 },
+    ],
+  },
+};
+const KEYS = Object.keys(VARIANTS);
+
+/* ---------- mandala ---------- */
+const MOTIFS = {
+  dot: s => `<circle r="${s}"/>`,
+  diamond: (s, a) => `<rect x="${-s}" y="${-s}" width="${2*s}" height="${2*s}" transform="rotate(45)"/>${a ? `<circle r="${s*.38}" fill="${a}" stroke="none"/>` : ''}`,
+  scallop: s => `<circle r="${s}"/>`,
+  petal: (s, a) => `<path d="M0 ${s*.9} C ${-s*.55} ${s*.3} ${-s*.45} ${-s*.6} 0 ${-s} C ${s*.45} ${-s*.6} ${s*.55} ${s*.3} 0 ${s*.9}Z"/>${a ? `<path d="M0 ${s*.45} C ${-s*.22} ${s*.1} ${-s*.18} ${-s*.35} 0 ${-s*.55} C ${s*.18} ${-s*.35} ${s*.22} ${s*.1} 0 ${s*.45}Z" fill="${a}" stroke="none"/>` : ''}`,
+  triangle: s => `<path d="M${-s*.62} 0 L0 ${-s*1.25} L${s*.62} 0Z"/>`,
+  paisley: (s, a) => `<path d="M0 ${s} C ${-s*.9} ${s*.7} ${-s*.8} ${-s*.4} ${-s*.1} ${-s*.9} C ${s*.15} ${-s*1.1} ${s*.6} ${-s*1.2} ${s*.35} ${-s*.7} C ${s*.15} ${-s*.4} ${s*.85} ${-s*.1} ${s*.6} ${s*.5} C ${s*.45} ${s*.85} ${s*.2} ${s} 0 ${s}Z"/>${a ? `<circle cx="${-s*.05}" cy="${s*.25}" r="${s*.3}" fill="${a}" stroke="none"/><circle cx="${-s*.05}" cy="${s*.25}" r="${s*.13}" fill="#0e3b2e" stroke="none"/>` : ''}`,
+  lotus: (s, a) => `<path d="M0 ${s*.6} C ${-s*.4} ${s*.1} ${-s*.35} ${-s*.6} 0 ${-s} C ${s*.35} ${-s*.6} ${s*.4} ${s*.1} 0 ${s*.6}Z"/><path d="M0 ${s*.6} C ${-s*.9} ${s*.5} ${-s*1.1} ${-s*.2} ${-s*.9} ${-s*.5} C ${-s*.5} ${-s*.1} ${-s*.2} ${s*.2} 0 ${s*.6}Z"/><path d="M0 ${s*.6} C ${s*.9} ${s*.5} ${s*1.1} ${-s*.2} ${s*.9} ${-s*.5} C ${s*.5} ${-s*.1} ${s*.2} ${s*.2} 0 ${s*.6}Z"/>${a ? `<circle cy="${-s*.15}" r="${s*.14}" fill="${a}" stroke="none"/>` : ''}`,
+};
+function annulus(r1, r2) {
+  const c = r => `M ${CX - r} ${CY} a ${r} ${r} 0 1 0 ${2*r} 0 a ${r} ${r} 0 1 0 ${-2*r} 0 Z`;
+  return c(r2) + ' ' + c(r1);
+}
+function buildMandala(v) {
+  const groups = { '-1': '', '1': '', '-0.6': '' };
+  let base = `<circle cx="${CX}" cy="${CY}" r="250" fill="${v.halo}"/>`;
+  const filt = v.mode === 'paper' ? `filter="url(#paper)"` : v.mode === 'line' ? `filter="url(#glow)"` : '';
+  for (const b of v.bands) {
+    let svg = '';
+    if (b.kind === 'fill') svg = `<path d="${annulus(b.r1, b.r2)}" fill="${b.color}" fill-rule="evenodd"/>`;
+    if (b.kind === 'circle') svg = `<circle cx="${CX}" cy="${CY}" r="${b.r}" fill="none" stroke="${b.stroke}" stroke-width="${b.w}"/>`;
+    if (b.kind === 'motif') {
+      const paint = b.stroke ? `fill="none" stroke="${b.stroke}" stroke-width="1.6"` : `fill="${b.fill}"`;
+      for (let i = 0; i < b.count; i++) {
+        const ang = i * 360 / b.count;
+        svg += `<g transform="rotate(${ang} ${CX} ${CY}) translate(${CX} ${CY - b.r})${b.inward ? ' rotate(180)' : ''}" ${paint}>${MOTIFS[b.motif](b.size, b.accent)}</g>`;
+      }
+    }
+    const key = String(b.speed ?? 1);
+    groups[key] += `<g ${filt}>${svg}</g>`;
+  }
+  return base + Object.entries(groups).map(([k, s]) => `<g class="spin" data-speed="${k}">${s}</g>`).join('');
+}
+
+/* ---------- placeholder portrait (¾ view, facing left) ---------- */
+function buildPortrait(v) {
+  const p = v.portrait, L = p.line, sw = L === 'none' ? 0 : 2.2;
+  const st = `stroke="${L}" stroke-width="${sw}" stroke-linejoin="round" stroke-linecap="round"`;
+  const f = p.filter === 'none' ? '' : `filter="${p.filter}"`;
+  const blush = p.blush === 'none' ? '' : `<ellipse cx="200" cy="238" rx="20" ry="11" fill="${p.blush}" opacity=".45"/>`;
+  return `
+  <g class="portrait" id="portrait" transform="translate(216 214) scale(1.35)">
+    <g ${f}><path d="M130 175 C 126 95 195 58 252 72 C 318 88 326 165 318 235 C 313 282 300 312 286 322 L 168 322 C 146 300 132 258 130 175Z" fill="${p.hair}" ${st}/></g>
+    <g ${f}><path d="M186 270 L 186 345 L 240 345 L 240 268Z" fill="${p.shade}" ${st}/></g>
+    <g ${f}><path d="M70 470 C 80 380 140 342 212 342 C 284 342 344 380 354 470Z" fill="${p.top}" ${st}/>
+      <path d="M170 344 C 190 372 236 372 256 344" fill="none" stroke="${p.trim}" stroke-width="6" stroke-linecap="round"/></g>
+    <g ${f}><path d="M150 168 C 150 122 192 104 228 110 C 260 116 274 150 272 198 C 270 244 254 280 222 296 C 202 306 182 302 168 288 C 158 276 152 262 150 250 L 139 236 C 135 229 139 223 146 221 L 150 202Z" fill="${p.skin}" ${st}/></g>
+    ${blush}
+    <ellipse cx="262" cy="206" rx="11" ry="18" fill="${p.shade}" ${st}/>
+    <g ${f}><path d="M138 178 C 142 112 200 82 252 92 C 286 99 306 130 302 172 C 290 140 252 124 214 130 C 182 136 158 152 138 178Z" fill="${p.hairHi === p.hair ? p.hair : p.hairHi}" ${st}/>
+      <path d="M140 178 C 130 214 134 256 150 290 L 160 284 C 151 248 151 206 162 168Z" fill="${p.hair}" ${st}/>
+      <path d="M262 180 C 290 186 300 230 292 270 C 286 290 280 300 276 304 C 286 268 282 220 262 192Z" fill="${p.hair}" ${st}/></g>
+    <path d="M168 178 C 178 170 196 170 206 176" fill="none" stroke="${L === 'none' ? p.hair : L}" stroke-width="4" stroke-linecap="round"/>
+    <g class="eye">
+      <path d="M168 196 C 176 186 196 186 204 196 C 196 205 176 205 168 196Z" fill="${p.white}" ${st}/>
+      <clipPath id="eyeClip"><path d="M168 196 C 176 186 196 186 204 196 C 196 205 176 205 168 196Z"/></clipPath>
+      <g clip-path="url(#eyeClip)"><g id="iris"><circle cx="184" cy="196" r="6.5" fill="${L === 'none' ? p.iris : L}"/><circle cx="182" cy="194" r="1.8" fill="#fff"/></g></g>
+      <path d="M166 195 C 176 184 196 184 206 194" fill="none" stroke="${L === 'none' ? p.iris : L}" stroke-width="2.6" stroke-linecap="round"/>
+    </g>
+    <path d="M170 262 C 178 268 190 268 196 262 C 190 272 176 272 170 262Z" fill="${p.lip}" ${st}/>
+    <g class="earring" ${f}>
+      <path d="M262 222 L 262 236" stroke="${p.earring}" stroke-width="2.4"/>
+      <path d="M248 252 C 248 238 276 238 276 252Z" fill="${p.earring}" ${st}/>
+      <circle cx="252" cy="257" r="2.6" fill="${p.earring}"/><circle cx="262" cy="259" r="2.6" fill="${p.earring}"/><circle cx="272" cy="257" r="2.6" fill="${p.earring}"/>
+    </g>
+    <path class="sparkle" d="M290 236 l3 9 l9 3 l-9 3 l-3 9 l-3 -9 l-9 -3 l9 -3Z" fill="#fff"/>
+    <path class="sparkle s2" d="M244 266 l2 6 l6 2 l-6 2 l-2 6 l-2 -6 l-6 -2 l6 -2Z" fill="#fff"/>
+    <g class="bubble">
+      <path d="M40 110 h 80 a 16 16 0 0 1 16 16 v 30 a 16 16 0 0 1 -16 16 h -14 l 18 18 l -34 -18 h -50 a 16 16 0 0 1 -16 -16 v -30 a 16 16 0 0 1 16 -16Z" fill="${v.mode === 'line' ? '#f6e9ff' : '#fff'}" stroke="${v.ink}" stroke-width="2.5"/>
+      <text x="80" y="152" text-anchor="middle" font-family="${v.hiFont.replace(/"/g, "'")}" font-size="30" fill="${v.mode === 'line' ? '#150c22' : v.ink}">Hi!</text>
+    </g>
+  </g>`;
+}
+
+/* ---------- wiring ---------- */
+const $ = id => document.getElementById(id);
+let key = new URLSearchParams(location.search).get('variant');
+if (!VARIANTS[key]) key = 'A';
+let fontIdx = 0;
+
+function render() {
+  const v = VARIANTS[key], s = document.documentElement.style;
+  s.setProperty('--bg', v.bg); s.setProperty('--ink', v.ink);
+  s.setProperty('--bgImage', v.bgImage || 'none'); s.setProperty('--texture', v.texture);
+  s.setProperty('--hiFont', v.hiFont); s.setProperty('--hiColor', v.hiColor);
+  s.setProperty('--nameFont', v.fonts[fontIdx % v.fonts.length]); s.setProperty('--nameColor', v.nameColor);
+  s.setProperty('--nameShadow', v.nameShadow || 'none');
+  $('mandala').innerHTML = buildMandala(v);
+  $('portraitWrap').innerHTML = buildPortrait(v);
+  $('label').textContent = `${key} · ${v.name}`;
+  const font = v.fonts[fontIdx % v.fonts.length].split(',')[0].replace(/'/g, '');
+  $('panel').innerHTML = `<h4>${key} · ${v.name}</h4><p>${v.blurb}</p>
+    <div class="swatches">${v.swatches.map(c => `<span style="background:${c}" title="${c}"></span>`).join('')}</div>
+    <p>Name font: <b style="color:#fff">${font}</b> (press Aa ↻ to try others)<br>Small text: ${v.hiFont.split(',')[0].replace(/'/g, '')}</p>
+    <p style="margin-top:6px">Tap her for "Hi!" and the earring swing. Her eye follows your cursor.</p>`;
+  $('portrait').addEventListener('click', poke);
+  spin();
+}
+function go(d) {
+  key = KEYS[(KEYS.indexOf(key) + d + KEYS.length) % KEYS.length]; fontIdx = 0;
+  history.replaceState(null, '', `?variant=${key}`); render();
+}
+$('prev').onclick = () => go(-1);
+$('next').onclick = () => go(1);
+$('font').onclick = () => { fontIdx++; render(); };
+$('info').onclick = () => $('panel').classList.toggle('open');
+addEventListener('keydown', e => {
+  if (e.target.closest('input,textarea,[contenteditable]')) return;
+  if (e.key === 'ArrowLeft') go(-1);
+  if (e.key === 'ArrowRight') go(1);
+});
+
+/* ring turns with scroll */
+function spin() {
+  const a = scrollY * 0.12;
+  document.querySelectorAll('.spin').forEach(g => g.setAttribute('transform', `rotate(${a * Number(g.dataset.speed)} ${CX} ${CY})`));
+}
+addEventListener('scroll', spin, { passive: true });
+
+/* eye: follows mouse; looks around on its own on touch or when idle */
+let target = { x: 0, y: 0 }, lastMove = 0;
+function look(dx, dy) { target = { x: Math.max(-1, Math.min(1, dx)), y: Math.max(-1, Math.min(1, dy)) }; }
+addEventListener('mousemove', e => {
+  lastMove = Date.now();
+  const r = document.querySelector('.eye').getBoundingClientRect();
+  const dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2);
+  const d = Math.hypot(dx, dy) || 1;
+  look(dx / d * Math.min(1, d / 200), dy / d * Math.min(1, d / 200));
+});
+setInterval(() => {
+  if (Date.now() - lastMove < 3000) return;
+  const spots = [[0,0],[-1,-.3],[1,0],[-.6,.6],[.5,-.6],[0,0]];
+  const [x, y] = spots[Math.floor(Math.random() * spots.length)]; look(x, y);
+}, 2200);
+(function tick() {
+  const iris = $('iris');
+  if (iris) {
+    const cur = iris._p || { x: 0, y: 0 };
+    cur.x += (target.x - cur.x) * .15; cur.y += (target.y - cur.y) * .15; iris._p = cur;
+    iris.setAttribute('transform', `translate(${cur.x * 8} ${cur.y * 3.5})`);
+  }
+  requestAnimationFrame(tick);
+})();
+
+/* blink */
+(function blinkLoop() {
+  setTimeout(() => {
+    const p = $('portrait');
+    if (p) { p.classList.add('blink'); setTimeout(() => p.classList.remove('blink'), 130); }
+    blinkLoop();
+  }, 2200 + Math.random() * 3000);
+})();
+
+/* tap: "Hi!" bubble + earring swing and shine */
+function poke() {
+  const p = $('portrait');
+  p.classList.remove('swing', 'talk'); void p.getBoundingClientRect();
+  p.classList.add('swing', 'talk');
+  clearTimeout(p._t); p._t = setTimeout(() => p.classList.remove('talk'), 1800);
+}
+
+render();
+</script>
+</body>
+</html>

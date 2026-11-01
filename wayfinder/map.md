@@ -36,9 +36,12 @@ A build-ready **design spec** (mostly visual/interaction design) for Aarya Ingal
 - [AI art pipeline for a layered paper-cutout portrait](tickets/03-ai-art-pipeline.md): Gemini master portrait, cut into layers in Photopea, procedural SVG Ring, AVIF/WebP layers.
 
 - [Scene choreography: desktop and phone](tickets/01-scene-choreography.md): Hero → Now → Interests & Skills (arc list) → Socials (arc list). Portrait drops out and pops up bottom-right in a second, left-facing pose. Phone sizes are 50–70% in the Hero and 30% elsewhere.
+- [Visual language: palette, motifs, fonts](tickets/02-visual-language.md): mostly A (light, pink, flat paper) with D's green/gold Paithani accents. Fonts are Allura for the name, Yatra One for titles, Rozha One for labels and Lora for paragraphs.
+- Handed off to execution (Oct 31): content facts → step 01, Ring mandala → step 02, Portrait prompts and asset list → step 03. Final design spec: [SPEC.md](../SPEC.md); build steps: [execution/](../execution/README.md).
 
 ## Not yet specified
 
+<!-- Map closed Oct 31. The patches below are post-Nov-3 work or are tracked in execution steps. -->
 - Photo gallery: after the Nov 3 version.
 - Her real voice saying "Hi!": wanted later, alongside the speech bubble.
 - Floating motifs around the Portrait: wanted later, nothing chosen to put there yet.

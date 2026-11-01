@@ -1,0 +1,8 @@
+# Only the app goes to Vercel. Private photos and planning stay local.
+reference images/
+art-src/
+prototypes/
+wayfinder/
+tools/
+execution/
+.env*
