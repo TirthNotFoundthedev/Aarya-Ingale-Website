@@ -180,28 +180,91 @@ function crossfade({ ring, heroPortrait, cornerPortrait, heroScene }) {
   return tl;
 }
 
-export function playStage({ stage, ring, heroPortrait, cornerPortrait, heading, heroScene }) {
-  const parts = { stage, ring, heroPortrait, cornerPortrait, heading, heroScene };
+// Bye Scene, full motion: the Hero move played backwards in spirit. The Corner pose drops out of the bottom,
+// the Ring glides back to the Hero spot and the Hero pose pops straight up. Starts after the Socials Arc
+// list has begun rolling out (it leaves at the Bye Scene's `top 50%`), so the two never fight over the Ring.
+// Its tweens start from the corner state (where the Hero move ended) and don't render on creation.
+function scrubbedReturn({ ring, heroPortrait, cornerPortrait, byeScene }) {
+  const tl = gsap.timeline({
+    defaults: { ease: 'none' },
+    scrollTrigger: { trigger: byeScene, start: 'top 50%', end: 'top 0%', scrub: 0.6, invalidateOnRefresh: true },
+  });
+  const still = { immediateRender: false };
+
+  tl.fromTo(ring, { x: () => geo.ringCorner.x }, { x: () => geo.ringHero.x, ease: 'power2.in', duration: 1, ...still }, 0);
+  tl.fromTo(
+    ring,
+    { y: () => geo.ringCorner.y, scale: () => geo.ringCorner.scale },
+    { y: () => geo.ringHero.y, scale: () => geo.ringHero.scale, ease: 'power2.inOut', duration: 1, ...still },
+    0,
+  );
+
+  tl.fromTo(cornerPortrait, { y: () => geo.cornerPortrait.y }, { y: BELOW, ease: 'power2.in', duration: 0.3, ...still }, 0);
+  tl.set(cornerPortrait, { autoAlpha: 0 }, 0.3);
+
+  tl.set(heroPortrait, { autoAlpha: 1 }, 0.5);
+  tl.fromTo(
+    heroPortrait,
+    { x: () => geo.heroPortrait.x, y: BELOW },
+    { y: () => geo.heroPortrait.y, ease: 'back.out(1.4)', duration: 0.5, ...still },
+    0.5,
+  );
+  return tl;
+}
+
+// Bye Scene, reduced motion: a crossfade back to the Hero layout, like the one that left it.
+function crossfadeReturn({ ring, heroPortrait, cornerPortrait, byeScene }) {
+  const tl = gsap.timeline({
+    paused: true,
+    scrollTrigger: {
+      trigger: byeScene,
+      start: 'top 50%',
+      toggleActions: 'play none none reverse',
+      invalidateOnRefresh: true,
+      onRefresh: (self) => {
+        // Runs after the Hero crossfade's own refresh (it was created first), so re-place for the Bye state.
+        if (self.progress <= 0) return;
+        self.animation.progress(1, true);
+        gsap.set(ring, geo.ringHero);
+        gsap.set(heroPortrait, { ...geo.heroPortrait });
+        gsap.set(cornerPortrait, { ...geo.cornerPortrait });
+      },
+    },
+  });
+  tl.to([ring, cornerPortrait], { autoAlpha: 0, duration: 0.2 })
+    .add(() => gsap.set(ring, tl.reversed() ? geo.ringCorner : geo.ringHero), 0.2)
+    .to([ring, heroPortrait], { autoAlpha: 1, duration: 0.2 }, 0.2);
+  return tl;
+}
+
+export function playStage({ stage, ring, heroPortrait, cornerPortrait, heading, heroScene, byeScene }) {
+  const parts = { stage, ring, heroPortrait, cornerPortrait, heading, heroScene, byeScene };
   ScrollTrigger.addEventListener('refreshInit', () => measure(parts));
   measure(parts);
 
   // Build the move for the current motion preference; gsap.matchMedia rebuilds it if the preference changes.
   // A rebuild refreshes ScrollTrigger, which would jump the page to the top; keep the visitor where they were.
   let tl;
+  let tlBye;
   let keepY = null;
   ScrollTrigger.addEventListener('refresh', () => {
     if (keepY === null) return;
     scrollTo(0, keepY);
     keepY = null;
-    // The rebuilt timeline was measured at the top. The static update refreshes ScrollTrigger's cached scroll
-    // (an instance update would still read 0), then the scrub is snapped so it doesn't glide over from the Hero.
+    // The rebuilt timelines were measured at the top. The static update refreshes ScrollTrigger's cached scroll
+    // (an instance update would still read 0), then each scrub is snapped to where the visitor is so it doesn't
+    // glide over from the Hero. A scrub that hasn't started yet (progress 0) snaps to 0.
     ScrollTrigger.update();
-    const tween = tl.scrollTrigger?.getTween();
-    if (tween) tween.progress(1);
+    for (const t of [tl, tlBye]) {
+      const st = t.scrollTrigger;
+      const tween = st?.getTween();
+      if (tween) tween.progress(st.progress);
+    }
   });
   gsap.matchMedia().add({ reduced: REDUCED, full: `not all and ${REDUCED}` }, ({ conditions }) => {
     gsap.set(cornerPortrait, { autoAlpha: 0 }); // hidden until it arrives
     tl = conditions.reduced ? crossfade(parts) : scrubbedMove(parts);
+    tlBye = conditions.reduced ? crossfadeReturn(parts) : scrubbedReturn(parts);
     return () => {
       keepY = scrollY; // runs when the preference flips, before the rebuild
     };

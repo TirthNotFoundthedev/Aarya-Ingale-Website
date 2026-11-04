@@ -64,6 +64,13 @@ export const content = {
     ],
   },
 
+  // The closing Scene: the Hero pose comes back for a goodbye. `bubble` is what she says when you tap her there.
+  bye: {
+    greeting: 'Thanks for stopping by,',
+    title: 'Bye!',
+    bubble: 'See you!',
+  },
+
   // Photo gallery comes after Nov 3. Items will be { src, alt, caption }.
   gallery: [],
 };
