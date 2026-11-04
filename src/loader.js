@@ -11,7 +11,7 @@ import { chime, click, pop, rememberedSound, setSoundEnabled, silence, unlockAud
 const REDUCED = '(prefers-reduced-motion: reduce)';
 const ANIMATION_S = 4.2; // click → handoff done, full animation
 const LOAD_CAP_MS = 6000; // a slow asset never keeps her out longer than this
-const HARD_CAP_MS = 12000; // after the click the loader is gone by now, whatever happens
+const HARD_CAP_MS = 12000; // this long after the animation starts the loader is gone, whatever happens
 const GATE_FONT_WAIT_MS = 1200; // the gate shows after this even if the fonts are still loading
 const TEETH = 14; // zigzag teeth on the cut edge of the wrapping paper
 const TOOTH = 14; // px depth of a tooth
@@ -95,7 +95,7 @@ function build() {
 
 // Real progress: the fonts and the Hero and Corner art. Each task is capped so a stalled one can't hold things up.
 function trackLoading(images, onProgress) {
-  const fonts = Promise.all(['1em Allura', '1em "Yatra One"', '1em "Rozha One"', '1em Lora'].map((face) => document.fonts.load(face))).then(
+  const fonts = Promise.all(['1em Allura', '1em "Yatra One"', '1em "Rozha One"', '1em Lora', '1em Kalam'].map((face) => document.fonts.load(face))).then(
     () => document.fonts.ready,
   );
   const tasks = [fonts, ...images.map((img) => (img.decode ? img.decode() : Promise.resolve()))].map((task) => withCap(task));
@@ -112,10 +112,12 @@ export function playLoader({ app, images = [] }) {
   let finished = false;
   let started = false;
   let tl = null;
+  const keys = new AbortController(); // removes the Escape listener when the loader ends
 
   // Lock scroll and the page underneath until the loader is gone.
   html.classList.add('is-loading');
   app.inert = true;
+  history.scrollRestoration = 'manual'; // a reload must land on the Hero, not where she was
   scrollTo(0, 0);
   document.body.append(ui.root, live);
 
@@ -127,6 +129,8 @@ export function playLoader({ app, images = [] }) {
     ui.root.remove();
     html.classList.remove('is-loading');
     app.inert = false;
+    keys.abort();
+    scrollTo(0, 0);
     ScrollTrigger.refresh(); // the scrollbar is back; remeasure the Stage
     live.textContent = t.welcome;
     setTimeout(() => live.remove(), 4000);
@@ -145,7 +149,7 @@ export function playLoader({ app, images = [] }) {
 
   // The gate appears once the fonts are in (or after a moment), so its text never swaps fonts under the visitor.
   const showGate = () => {
-    if (ui.root.classList.contains('is-gated') || finished) return;
+    if (ui.root.classList.contains('is-gated') || finished || started) return;
     ui.root.classList.add('is-gated');
     if (!matchMedia(REDUCED).matches) {
       gsap.fromTo(ui.card, { y: -40, rotation: -3, opacity: 0 }, { y: 0, rotation: 0, opacity: 1, duration: 0.7, ease: 'back.out(1.5)', clearProps: 'rotation' });
@@ -161,6 +165,7 @@ export function playLoader({ app, images = [] }) {
     setSoundEnabled(withSound);
     if (withSound) unlockAudio(); // inside the click: this is what the autoplay policy needs
     ui.sound.disabled = ui.quiet.disabled = true;
+    gsap.killTweensOf([ui.card, ui.bow]); // a quick Enter must not fight the gate's own entrance
     // Normally already loaded behind the gate; otherwise wait, but never past the cap.
     await withCap(loading, LOAD_CAP_MS);
     if (finished) return;
@@ -177,7 +182,7 @@ export function playLoader({ app, images = [] }) {
       tl?.timeScale(6);
     };
     ui.root.addEventListener('pointerdown', skip, { once: true });
-    addEventListener('keydown', (event) => event.key === 'Escape' && skip(), { once: true });
+    addEventListener('keydown', (event) => event.key === 'Escape' && skip(), { signal: keys.signal });
   }
 
   ui.sound.addEventListener('click', () => begin(true));
@@ -224,7 +229,7 @@ function unwrap(ui, done) {
       .fromTo(band, { rotation: i % 2 ? 100 : -100 }, { rotation: 0, duration: 0.95, ease: 'power3.out' }, at)
       .call(pop, [i], at + 0.1);
   });
-  tl.to(bands, { rotation: (i) => (i % 2 ? -14 : 14), duration: 2, ease: 'sine.inOut' }, ringAt + 0.9);
+  tl.to(bands, { rotation: (i) => (i % 2 ? -14 : 14), duration: 1.8, ease: 'sine.inOut' }, ringAt + 0.9);
 
   // 4. The name draws in left to right, sparkles burst, the chime lands.
   const nameAt = 2.45;
@@ -237,7 +242,7 @@ function unwrap(ui, done) {
     tl.fromTo(
       star,
       { x: 0, y: 0, scale: 0, opacity: 1, rotation: 0 },
-      { x: `${Math.cos(angle) * dist}vmin`, y: `${Math.sin(angle) * dist}vmin`, scale: 0.7 + (i % 3) * 0.35, opacity: 0, rotation: 90, duration: 1.1, ease: 'power2.out' },
+      { x: `${Math.cos(angle) * dist}vmin`, y: `${Math.sin(angle) * dist}vmin`, scale: 0.7 + (i % 3) * 0.35, opacity: 0, rotation: 90, duration: 0.9, ease: 'power2.out' },
       nameAt + 0.8,
     );
   });

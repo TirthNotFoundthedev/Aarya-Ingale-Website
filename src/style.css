@@ -654,6 +654,15 @@ html.is-loading {
   box-shadow: var(--paper-shadow), 0 14px 30px rgb(74 21 48 / 0.25);
   text-align: center;
   opacity: 0; /* the gate fades in once the fonts are ready (src/loader.js) */
+  visibility: hidden; /* and can't be tapped or tabbed to before that */
+}
+
+.is-gated .loader-card {
+  visibility: visible;
+}
+
+#app:focus {
+  outline: none; /* focus lands here when the loader ends */
 }
 
 .loader-card::before {
