@@ -48,9 +48,9 @@ export const content = {
       { label: 'Travelling', detail: '' },
     ],
     skills: [
-      { label: 'TODO skill 1', detail: '' },
-      { label: 'TODO skill 2', detail: '' },
-      { label: 'TODO skill 3', detail: '' },
+      { label: 'TODO skill 1', detail: 'TODO one-line detail' },
+      { label: 'TODO skill 2', detail: 'TODO one-line detail' },
+      { label: 'TODO skill 3', detail: 'TODO one-line detail' },
     ],
   },
 

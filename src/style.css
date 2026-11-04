@@ -148,6 +148,7 @@ img {
   color: inherit;
   font: inherit;
   cursor: pointer;
+  touch-action: manipulation;
   pointer-events: auto; /* the stage itself ignores taps; only she catches them */
   container-type: inline-size; /* width is set by src/stage.js; the bubble and sparkle scale with it (cqw) */
   -webkit-tap-highlight-color: transparent;
@@ -326,41 +327,183 @@ img {
   margin: 0;
 }
 
-.arc-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  max-width: 40rem;
-  margin: 1rem 0 0;
+/* Interests & Skills, Socials: tall Scenes whose text stays pinned while the Arc list turns (src/arc-list.js). */
+
+.scene.scene--arc {
+  min-height: 0;
+  height: calc(100svh + var(--arc-steps) * 30svh); /* one extra 30svh of scrolling per item the dial moves */
   padding: 0;
-  list-style: none;
+  overflow: clip; /* not hidden: that would stop the pinned text from sticking */
 }
 
-.arc-list li {
-  display: flex;
-  flex-direction: column;
-  padding: 0.5rem 1rem;
+.scene-pin {
+  position: sticky;
+  top: 0;
+  padding: var(--gutter) var(--figure-right, var(--gutter)) 0 var(--gutter);
+}
+
+.scene--interests .body {
+  max-width: 22rem; /* leaves room for the arc's top items */
+}
+
+.arc-detail {
+  position: relative;
+  max-width: 22rem;
+  margin: 1.25rem 0 0;
+  padding: 1rem 1.4rem 1.1rem;
+  background: var(--paper);
+  border: 3px solid var(--paithani);
+  border-radius: 0.9rem;
+  /* Paper-cut frame: a gold zari line and a paper gap inside the green border. */
+  box-shadow: inset 0 0 0 4px var(--paper), inset 0 0 0 6px var(--gold), var(--paper-shadow);
+  transform-origin: 0 0;
+}
+
+.arc-detail:empty {
+  display: none;
+}
+
+.arc-detail strong,
+.arc-detail span {
+  display: block;
+}
+
+.arc-detail strong {
+  margin-bottom: 0.15rem;
+  font-size: 1.15rem;
+  color: var(--rani);
+}
+
+/* Gold diamonds on two opposite corners, like the Ring's mirror diamonds. */
+.arc-detail::before,
+.arc-detail::after {
+  content: '';
+  position: absolute;
+  width: 0.9rem;
+  height: 0.9rem;
+  background: var(--gold);
+  border: 2px solid var(--paithani);
+  transform: rotate(45deg);
+}
+
+.arc-detail::before {
+  top: -0.6rem;
+  left: 1rem;
+}
+
+.arc-detail::after {
+  right: 1rem;
+  bottom: -0.6rem;
+}
+
+.arc-detail.is-shown {
+  animation: unfold 0.55s cubic-bezier(0.3, 1.5, 0.5, 1);
+}
+
+.arc-detail.is-shown strong,
+.arc-detail.is-shown span {
+  animation: rise 0.45s ease-out 0.12s backwards;
+}
+
+.arc-detail.is-shown span {
+  animation-delay: 0.2s;
+}
+
+@keyframes unfold {
+  0% { opacity: 0; transform: scale(0.5) rotate(-4deg); }
+  100% { opacity: 1; transform: none; }
+}
+
+@keyframes rise {
+  0% { opacity: 0; transform: translateY(0.6rem); }
+  100% { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .arc-detail.is-shown,
+  .arc-detail.is-shown strong,
+  .arc-detail.is-shown span {
+    animation: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scene.scene--arc {
+    height: auto;
+    min-height: 100svh;
+  }
+}
+
+/* The Arc lists: one fixed layer above the stage, items hung from the bottom edge like the stage's children. */
+
+.arc-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 4; /* above the stage (0 wide, 3 stacked) and the stacked fade (2) */
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.arc-list {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  pointer-events: none;
+}
+
+.arc-item {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  white-space: nowrap;
   border-radius: 999px;
   background: #fff;
   box-shadow: var(--paper-shadow);
+  font-size: clamp(0.9rem, 1.5vw, 1.3rem);
+  pointer-events: auto;
+  will-change: transform;
+  touch-action: manipulation; /* no double-tap zoom delay; scrolling still starts on a pill */
+  -webkit-tap-highlight-color: transparent;
 }
 
-.arc-list--skills li {
+.arc-item--skill {
   background: var(--paithani);
   color: var(--blush);
 }
 
-.arc-list .detail {
-  font-size: 0.85rem;
+.arc-item--social {
+  background: var(--rani);
 }
 
-.arc-list a {
-  color: var(--rani);
+.arc-item > * {
+  display: flex;
+  align-items: center;
+  min-height: 44px; /* tap target */
+  padding: 0 1.1em;
+  border: 0;
+  background: none;
+  color: inherit;
+  font-size: inherit;
   text-decoration: none;
 }
 
-.arc-list a:hover,
-.arc-list a:focus-visible {
+.arc-item > button {
+  cursor: pointer;
+}
+
+.arc-item--social a {
+  color: var(--paper);
+}
+
+.arc-item.is-lead {
+  outline: 3px solid var(--gold);
+  outline-offset: 2px;
+}
+
+.arc-item a:hover,
+.arc-item a:focus-visible {
   text-decoration: underline;
   text-decoration-color: var(--gold);
   text-decoration-thickness: 2px;

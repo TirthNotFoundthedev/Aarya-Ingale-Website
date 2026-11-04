@@ -17,7 +17,7 @@ The order is **Hero → Now → Interests & Skills → Socials**. The Portrait a
 
 **Phone column means phones and portrait tablets:** any screen narrower than 700px, or with an aspect ratio of 4/5 or narrower (width ÷ height), gets the bottom-centre layout. Every other screen gets the bottom-right corner layout. On phones the character sits above the text, and a blush fade from the bottom edge to mid-screen hides text scrolling up behind her, so it fades in from the middle.
 
-**Arc list:** the items sit on an arc just outside the Ring and slide along it as you scroll, like a turning dial. Labels always stay upright. A suggestion still to try: highlight the item closest to the left end of the arc.
+**Arc list:** the items sit on an arc just outside the Ring and slide along it as you scroll, like a turning dial. Labels always stay upright. The item at the left end of the arc is highlighted (slightly larger, gold outline).
 
 **Hero → Now transition:** the Ring travels to the bottom-right corner. The Portrait **drops out of the bottom of the screen and pops back up from the right**, already in the left-facing corner pose. This hides the swap between the two poses. On phones the new pose rises straight up from below instead. With `prefers-reduced-motion` there is no travel: halfway through the Hero the Ring and Portrait fade out and fade back in at the corner.
 

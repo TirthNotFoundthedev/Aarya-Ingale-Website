@@ -2,6 +2,7 @@ import './style.css';
 import { content } from './content.js';
 import { createRing, spinRingOnScroll } from './ring.js';
 import { playStage, STACKED_CONDITION } from './stage.js';
+import { arcList } from './arc-list.js';
 
 const isTodo = (value) => typeof value === 'string' && value.startsWith('TODO');
 
@@ -53,17 +54,18 @@ function sceneTitle(id, text) {
   return el('h2', { className: 'scene-title', text, attrs: { id: `${id}-title` } });
 }
 
-function itemList(className, items) {
-  return el(
-    'ul',
-    { className },
-    items.map((item) =>
-      el('li', {}, [
-        el('span', { className: 'label', text: item.label }),
-        ...(item.detail ? [el('span', { className: 'detail', text: item.detail })] : []),
-      ]),
-    ),
-  );
+// A Scene whose Arc list turns while it scrolls: tall, with its text pinned at the top (see .scene--arc).
+// Each extra screenful of scrolling moves the dial by one item.
+function arcScene(id, itemCount, children) {
+  const node = scene(id, [el('div', { className: 'scene-pin' }, children)]);
+  node.classList.add('scene--arc');
+  node.style.setProperty('--arc-steps', itemCount - 1);
+  return node;
+}
+
+// The Arc lists sit in one fixed layer above the stage, one list per Scene (src/arc-list.js moves them).
+function arcListOf(id, items) {
+  return el('ul', { className: 'arc-list', attrs: { 'aria-labelledby': `${id}-title` } }, items);
 }
 
 const { hero, now, interestsSkills, socials } = content;
@@ -94,36 +96,59 @@ const nowScene = scene('now', [
   ...now.lines.map((line) => el('p', { className: 'body', text: line })),
 ]);
 
-const interestsScene = scene('interests', [
+// Interests & Skills: one Arc list, interests first. An item with a detail is a button; tapping it shows the
+// one-line detail under the overview.
+const detailPanel = el('p', { className: 'arc-detail', attrs: { 'aria-live': 'polite' } });
+function skillOrInterest(item, kind) {
+  const li = el('li', { className: `arc-item arc-item--${kind}` });
+  if (!item.detail) {
+    li.append(el('span', { className: 'label', text: item.label }));
+    return li;
+  }
+  const button = el('button', { className: 'label', text: item.label, attrs: { type: 'button' } });
+  button.addEventListener('click', () => {
+    detailPanel.replaceChildren(el('strong', { className: 'label', text: item.label }), el('span', { text: item.detail }));
+    detailPanel.classList.remove('is-shown');
+    void detailPanel.offsetWidth; // restart the unfold animation on every tap
+    detailPanel.classList.add('is-shown');
+  });
+  li.append(button);
+  return li;
+}
+const interestItems = [
+  ...interestsSkills.interests.map((item) => skillOrInterest(item, 'interest')),
+  ...interestsSkills.skills.map((item) => skillOrInterest(item, 'skill')),
+];
+const interestsList = arcListOf('interests', interestItems);
+const interestsScene = arcScene('interests', interestItems.length, [
   sceneTitle('interests', interestsSkills.title),
   el('p', { className: 'body', text: interestsSkills.overview }),
-  itemList('arc-list arc-list--interests', interestsSkills.interests),
-  itemList('arc-list arc-list--skills', interestsSkills.skills),
+  detailPanel,
 ]);
 
-const socialsScene = scene('socials', [
-  sceneTitle('socials', socials.title),
-  el(
-    'ul',
-    { className: 'arc-list arc-list--socials' },
-    socials.links.map((link) =>
-      el('li', {}, [
-        el('a', {
-          className: `label${isTodo(link.url) ? ' todo' : ''}`,
-          text: link.label,
-          attrs: {
-            href: isTodo(link.url) ? '#' : link.url,
-            'data-icon': link.icon,
-            ...(link.url.startsWith('http') && { rel: 'noopener', target: '_blank' }),
-          },
-        }),
-      ]),
-    ),
-  ),
-]);
+// Socials: each item is a link that opens its URL.
+const socialItems = socials.links.map((link) =>
+  el('li', { className: 'arc-item arc-item--social' }, [
+    el('a', {
+      className: `label${isTodo(link.url) ? ' todo' : ''}`,
+      text: link.label,
+      attrs: {
+        href: isTodo(link.url) ? '#' : link.url,
+        'data-icon': link.icon,
+        ...(link.url.startsWith('http') && { rel: 'noopener', target: '_blank' }),
+      },
+    }),
+  ]),
+);
+const socialsList = arcListOf('socials', socialItems);
+const socialsScene = arcScene('socials', socialItems.length, [sceneTitle('socials', socials.title)]);
+
+const arcLayer = el('div', { className: 'arc-layer' }, [interestsList, socialsList]);
 
 // The stage comes last so screen readers meet the name before the portrait; CSS puts it behind on desktop.
 // On stacked screens, the stage-fade overlay sits between the Scenes and the stage.
-document.querySelector('#app').append(heroScene, nowScene, interestsScene, socialsScene, stageFade, stage);
+document.querySelector('#app').append(heroScene, nowScene, interestsScene, socialsScene, stageFade, stage, arcLayer);
 spinRingOnScroll(ring);
 playStage({ stage, ring, heroPortrait, cornerPortrait, heading, heroScene });
+arcList({ scene: interestsScene, list: interestsList });
+arcList({ scene: socialsScene, list: socialsList });

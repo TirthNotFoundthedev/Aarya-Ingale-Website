@@ -99,7 +99,13 @@ function measure({ stage, ring, heroPortrait, cornerPortrait, heading, heroScene
   };
   // Where the Corner pose pops in from: past the right edge on wide screens, straight up from below when stacked.
   geo.cornerFromX = geo.cornerPortrait.x + (stacked ? 0 : wCorner * 0.7);
+  corner = { cx: cornerCx, up: -cornerCy, r: rCorner, stacked };
 }
+
+// The corner Ring as measured on the last refresh: centre x from the left edge, centre height above the
+// bottom edge, radius, and whether the stacked layout is in use. The Arc lists curve around it.
+let corner;
+export const cornerRing = () => corner;
 
 const BELOW = 10; // px below the bottom edge: fully out of sight
 const FONT_WAIT = 2000; // ms the stage waits for the fonts before it shows anyway
