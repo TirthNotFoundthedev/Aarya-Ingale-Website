@@ -3,10 +3,10 @@
 // ship. Silent until the visitor's first gesture has unlocked the AudioContext, and silent when sound is off.
 
 const STORAGE_KEY = 'spin-sound';
-const MAX_CLICKS_PER_SECOND = 22;
+const MAX_CLICKS_PER_SECOND = 12;
 const MIN_GAP = 1 / MAX_CLICKS_PER_SECOND;
 const MAX_VOICES = 4; // clicks still sounding; later ones are dropped rather than stacked
-const MASTER_LEVEL = 0.5;
+const MASTER_LEVEL = 0.4;
 const REDUCED = '(prefers-reduced-motion: reduce)';
 
 let ctx = null;
@@ -83,36 +83,33 @@ export function playSpinClick({ speed = 0.3, direction = 1, kind = 'ring' } = {}
   lastClickAt = now;
 
   const s = clamp(speed);
-  const heavy = kind === 'arc';
-  // Faster turn: a little higher and a little crisper. Backwards turns sit slightly lower.
-  const pitch = (heavy ? 1500 : 2400) * (1 + 0.55 * s) * (direction < 0 ? 0.88 : 1) * jitter(0.08);
-  const level = (0.1 + 0.1 * s) * jitter(0.2) * (heavy ? 1.1 : 1);
-  const length = 0.022 + 0.014 * (1 - s);
+  // Faster turn: a touch higher and shorter. Backwards turns sit slightly lower. Always round and quiet.
+  const level = (0.05 + 0.04 * s) * jitter(0.15);
+  const length = 0.07 - 0.025 * s;
+  const base = (kind === 'arc' ? 230 : 300) * (1 + 0.3 * s) * (direction < 0 ? 0.9 : 1) * jitter(0.05);
 
-  // The tick: a noise burst through a band-pass.
-  const src = ctx.createBufferSource();
-  src.buffer = noise;
-  const band = ctx.createBiquadFilter();
-  band.type = 'bandpass';
-  band.frequency.value = pitch;
-  band.Q.value = 2.2;
-  const tick = ctx.createGain();
-  tick.gain.setValueAtTime(0.0001, now);
-  tick.gain.exponentialRampToValueAtTime(level, now + 0.002);
-  tick.gain.exponentialRampToValueAtTime(0.0001, now + length);
-  src.connect(band).connect(tick).connect(master);
-
-  // The thock: a short low sine that gives the click some body.
+  // A soft wooden "tok": a low sine that glides down a little, with a slow-ish attack so it never snaps.
   const osc = ctx.createOscillator();
   osc.type = 'sine';
-  const base = (heavy ? 150 : 210) * jitter(0.06);
-  osc.frequency.setValueAtTime(base * 1.6, now);
-  osc.frequency.exponentialRampToValueAtTime(base, now + 0.02);
+  osc.frequency.setValueAtTime(base * 1.35, now);
+  osc.frequency.exponentialRampToValueAtTime(base, now + 0.03);
   const thock = ctx.createGain();
   thock.gain.setValueAtTime(0.0001, now);
-  thock.gain.exponentialRampToValueAtTime(level * 0.7, now + 0.003);
-  thock.gain.exponentialRampToValueAtTime(0.0001, now + length + 0.02);
+  thock.gain.linearRampToValueAtTime(level, now + 0.006);
+  thock.gain.exponentialRampToValueAtTime(0.0001, now + length);
   osc.connect(thock).connect(master);
+
+  // A breath of heavily low-passed noise for the mechanical texture.
+  const src = ctx.createBufferSource();
+  src.buffer = noise;
+  const soften = ctx.createBiquadFilter();
+  soften.type = 'lowpass';
+  soften.frequency.value = 900 * (1 + 0.4 * s);
+  const puff = ctx.createGain();
+  puff.gain.setValueAtTime(0.0001, now);
+  puff.gain.linearRampToValueAtTime(level * 0.35, now + 0.005);
+  puff.gain.exponentialRampToValueAtTime(0.0001, now + length * 0.6);
+  src.connect(soften).connect(puff).connect(master);
 
   voices += 1;
   let pending = 2;
@@ -123,9 +120,9 @@ export function playSpinClick({ speed = 0.3, direction = 1, kind = 'ring' } = {}
   src.onended = done;
   osc.onended = done;
   src.start(now);
-  src.stop(now + length + 0.01);
+  src.stop(now + length);
   osc.start(now);
-  osc.stop(now + length + 0.04);
+  osc.stop(now + length + 0.02);
   return true;
 }
 

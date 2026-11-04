@@ -36,7 +36,7 @@ The order is **Hero → Now → Interests & Skills → Socials**. The Portrait a
 
 - **Ring:** made of concentric bands. Neighbouring bands turn in **opposite directions at different speeds**, driven by scroll.
 - **Tap/click her:** a "Hi!" speech bubble pops out (white bubble, plum outline, Kalam font), and a sparkle flashes on her earring.
-- **Spin sound:** everything that turns like a dial (the Ring's beads, the Arc list's dial and roll-in/out) plays soft synthesised detent clicks (`src/spin-sfx.js`, no audio files), faster and higher as it spins faster, rate-capped. Silent until the first tap or key press, and silent when the tab is hidden or with `prefers-reduced-motion`. A round speaker button fixed **bottom-left** turns it on and off; the choice is saved in `localStorage`.
+- **Spin sound:** the Arc lists (Interests & Skills, Socials) play soft, round synthesised detent clicks as the dial turns and the items roll in and out (the Ring is silent) (`src/spin-sfx.js`, no audio files), a little higher as it spins faster, rate-capped. Silent until the first tap or key press, and silent when the tab is hidden or with `prefers-reduced-motion`. A round speaker button fixed **bottom-left** turns it on and off; the choice is saved in `localStorage`.
 - `prefers-reduced-motion`: no scroll-linked rotation, and the Hero → Now swap is a crossfade instead of the travel; the content still works.
 
 The bubble and sparkle already work in the prototype. Copy the behaviour from there.

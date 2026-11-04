@@ -4,7 +4,6 @@
 // Colours come from the palette's CSS custom properties. The Ring looks the same in every Scene (SPEC.md).
 
 import gsap from 'gsap';
-import { createDetents } from './spin-sfx.js';
 
 const DEG_PER_PX = 0.12; // how far a speed-1 band turns per pixel scrolled
 
@@ -186,12 +185,6 @@ export function spinRingOnScroll(ring) {
       band.to = turner(band.el);
     }
   }
-
-  // Detent clicks follow the bead band's real (eased) angle, one per bead.
-  const beads = ring.querySelector('[data-band="bead-ring"]');
-  const detents = createDetents({ step: 6, fast: 260 });
-  detents.reset(gsap.getProperty(beads, 'rotation'));
-  gsap.ticker.add(() => detents.update(gsap.getProperty(beads, 'rotation')));
 
   addEventListener('scroll', update, { passive: true });
   reduced.addEventListener('change', onMotionPreference);
