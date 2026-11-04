@@ -128,6 +128,7 @@ export function arcList({ scene, list }) {
   });
   reduced.addEventListener('change', () => {
     dial.p = 0;
+    dialClick.reset(0);
     render();
   });
 }

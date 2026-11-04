@@ -50,9 +50,10 @@ export function unlockAudio() {
   const audio = ensureContext();
   if (!audio) return Promise.resolve(false);
   unlocked = true;
-  if (audio.state === 'running' || document.hidden) return Promise.resolve(true);
+  if (audio.state === 'running') return Promise.resolve(true);
+  if (document.hidden) return Promise.resolve(false);
   return audio.resume().then(
-    () => true,
+    () => audio.state === 'running',
     () => false,
   );
 }
@@ -189,17 +190,19 @@ export function mountSoundToggle(parent = document.body) {
 
 // ---------- housekeeping ----------
 
-// Standalone unlock: the first real gesture wakes the AudioContext. (The loader's start button does the same
-// by calling unlockAudio() itself.) Scrolling alone is not a gesture, so the dial is quiet until a tap or key.
+// Standalone unlock: a real gesture wakes the AudioContext. (The loader's start button does the same by
+// calling unlockAudio() itself.) Touch pointerdown is not an activation event, so listen for the end of the
+// tap. The listeners stay for the page's life so a context iOS interrupted (a call, Siri) wakes on the next tap.
+// Scrolling alone is not a gesture, so the dial is quiet until a tap or key.
 function unlockOnGesture() {
-  const events = ['pointerdown', 'keydown', 'touchend'];
   const handler = () => {
-    unlockAudio().then((ok) => {
-      if (!ok) return;
-      events.forEach((name) => removeEventListener(name, handler, true));
-    });
+    if (ctx && unlocked && ctx.state === 'running') return;
+    if (!ctx && !enabled) return; // sound is off: don't create a context until it is turned on
+    unlockAudio();
   };
-  events.forEach((name) => addEventListener(name, handler, { capture: true, passive: true }));
+  for (const name of ['pointerup', 'touchend', 'keydown', 'click']) {
+    addEventListener(name, handler, { capture: true, passive: true });
+  }
 }
 unlockOnGesture();
 
