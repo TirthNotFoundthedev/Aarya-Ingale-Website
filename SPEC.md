@@ -23,6 +23,12 @@ The order is **Hero → Now → Interests & Skills → Socials**. The Portrait a
 
 **Other transitions** (Now → Interests → Socials): the Portrait stays put, the Ring keeps turning, and the content swaps.
 
+## Loader
+
+Before the Hero, a full-screen **Loader** shows a wrapped gift: rani paper with a gold ribbon cross and a paper tag holding the **gate**. The gate asks one thing with two buttons, **Open with sound** and **Open quietly**; nothing is audible before that click. The click creates the `AudioContext`, stores the choice (`localStorage`, key `aarya-sound`) and starts a ~4 s unwrapping: the tag drops, the ribbons slip off, the paper parts along a zigzag cut, the Ring's bands unfurl inside-out with a pop each, the name draws in left to right with a sparkle burst and a chime, then the veil fades onto the Hero (already built and measured underneath). Sounds are synthesised in `src/loader-sfx.js` (no audio files). While the gate shows, the fonts and both Portrait images load for real (a progress bar), each capped at 6 s so a slow asset never blocks entry. Clicking or Escape during the animation skips ahead.
+
+`prefers-reduced-motion`: same gate, then a short fade with no movement. The page is `inert` and scroll is locked until the Loader is gone. Text is in `content.js` → `loader`.
+
 ## Portrait
 
 - Stylised but recognisable, not photoreal: a short bob with hair tucked behind one ear, an earring and a soft smile, head and shoulders.
