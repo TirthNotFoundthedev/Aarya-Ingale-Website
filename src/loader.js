@@ -7,6 +7,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { content } from './content.js';
 import { createRing } from './ring.js';
 import { chime, click, pop, rememberedSound, setSoundEnabled, silence, unlockAudio, whoosh } from './loader-sfx.js';
+import { setSoundEnabled as setSpinSound, unlockAudio as unlockSpinAudio } from './spin-sfx.js';
 
 const REDUCED = '(prefers-reduced-motion: reduce)';
 const ANIMATION_S = 4.2; // click → handoff done, full animation
@@ -163,7 +164,11 @@ export function playLoader({ app, images = [] }) {
     if (started) return;
     started = true;
     setSoundEnabled(withSound);
-    if (withSound) unlockAudio(); // inside the click: this is what the autoplay policy needs
+    setSpinSound(withSound); // the dial clicks follow the gate's choice
+    if (withSound) {
+      unlockAudio(); // inside the click: this is what the autoplay policy needs
+      unlockSpinAudio();
+    }
     ui.sound.disabled = ui.quiet.disabled = true;
     gsap.killTweensOf([ui.card, ui.bow]); // a quick Enter must not fight the gate's own entrance
     // Normally already loaded behind the gate; otherwise wait, but never past the cap.

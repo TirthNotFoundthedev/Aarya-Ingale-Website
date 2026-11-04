@@ -796,3 +796,46 @@ html.is-loading {
   }
 }
 /* End of Loader */
+/* Spin SFX */
+.sound-toggle {
+  position: fixed;
+  left: max(0.75rem, env(safe-area-inset-left));
+  bottom: max(0.75rem, env(safe-area-inset-bottom));
+  z-index: 6; /* above the Arc layer (4) and the stage */
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 2px solid var(--plum);
+  border-radius: 50%;
+  background: var(--paper);
+  color: var(--plum);
+  box-shadow: var(--paper-shadow);
+  cursor: pointer;
+  transition: transform 0.15s ease, background-color 0.15s ease;
+}
+
+.sound-toggle svg {
+  width: 22px;
+  height: 22px;
+}
+
+.sound-toggle[aria-pressed='false'] {
+  background: var(--pink-pale);
+  color: var(--magenta);
+}
+
+.sound-toggle:hover {
+  transform: scale(1.06);
+}
+
+.sound-toggle:active {
+  transform: scale(0.96);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sound-toggle {
+    transition: none;
+  }
+}

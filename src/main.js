@@ -4,6 +4,7 @@ import { createRing, spinRingOnScroll } from './ring.js';
 import { playStage, STACKED_CONDITION } from './stage.js';
 import { arcList } from './arc-list.js';
 import { playLoader } from './loader.js';
+import { mountSoundToggle } from './spin-sfx.js';
 
 const isTodo = (value) => typeof value === 'string' && value.startsWith('TODO');
 
@@ -155,3 +156,4 @@ arcList({ scene: interestsScene, list: interestsList });
 arcList({ scene: socialsScene, list: socialsList });
 // The page-load gate and unwrapping animation sit on top of the finished page; it is inert until they are gone.
 playLoader({ app: document.querySelector('#app'), images: [...document.querySelectorAll('.portrait img')] });
+mountSoundToggle();

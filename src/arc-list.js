@@ -6,6 +6,7 @@
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { cornerRing } from './stage.js';
+import { createDetents } from './spin-sfx.js';
 
 const REDUCED = '(prefers-reduced-motion: reduce)';
 
@@ -31,6 +32,9 @@ export function arcList({ scene, list }) {
   const dial = { p: 0 }; // 0..1 through the Scene, eased
   // Each item's roll: -1 = waiting off the arc at the upper right, 0 = on the arc, 1 = rolled off past the left end.
   const rolls = items.map(() => ({ e: -1 }));
+  // Detent clicks: a heavier click every half item as the dial turns, and a short ratchet as items roll in or out.
+  const dialClick = createDetents({ step: 0.5, fast: 4, kind: 'arc' });
+  const rollClick = createDetents({ step: 0.25, fast: 2.5, kind: 'arc' });
 
   function render() {
     const ring = cornerRing();
@@ -64,7 +68,16 @@ export function arcList({ scene, list }) {
 
   const turnTo = (p) => {
     if (reduced.matches) p = 0;
-    gsap.to(dial, { p, duration: 0.4, ease: 'power2.out', overwrite: true, onUpdate: render });
+    gsap.to(dial, {
+      p,
+      duration: 0.4,
+      ease: 'power2.out',
+      overwrite: true,
+      onUpdate: () => {
+        render();
+        dialClick.update(dial.p * (items.length - 1));
+      },
+    });
   };
 
   // The dial turns while the Scene fills the screen...
@@ -76,6 +89,7 @@ export function arcList({ scene, list }) {
     onRefresh: (self) => {
       gsap.killTweensOf(dial);
       dial.p = reduced.matches ? 0 : self.progress;
+      dialClick.reset(dial.p * (items.length - 1));
       render();
     },
   });
@@ -87,7 +101,15 @@ export function arcList({ scene, list }) {
       rolls.forEach((r) => (r.e = to));
       return render();
     }
-    gsap.fromTo(rolls, { e: from }, { e: to, ...(to === 0 ? ROLL_IN : ROLL_OUT), onUpdate: render });
+    rollClick.reset(from);
+    gsap.fromTo(rolls, { e: from }, {
+      e: to,
+      ...(to === 0 ? ROLL_IN : ROLL_OUT),
+      onUpdate: () => {
+        render();
+        rollClick.update(rolls[0].e); // the first item leads the roll
+      },
+    });
   };
   ScrollTrigger.create({
     trigger: scene,
@@ -106,6 +128,7 @@ export function arcList({ scene, list }) {
   });
   reduced.addEventListener('change', () => {
     dial.p = 0;
+    dialClick.reset(0);
     render();
   });
 }
