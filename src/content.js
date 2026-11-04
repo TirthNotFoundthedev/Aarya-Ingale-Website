@@ -14,6 +14,18 @@ export const content = {
     greeting: 'Hi! I’m',
   },
 
+  // The page-load gate and unwrapping animation (src/loader.js).
+  loader: {
+    label: 'Welcome',
+    eyebrow: 'A little something, made for you',
+    title: 'Ready to unwrap?',
+    withSound: 'Open with sound',
+    withoutSound: 'Open quietly',
+    loading: 'Cutting the paper…',
+    ready: 'All set',
+    welcome: 'Welcome. Aarya’s page is ready.',
+  },
+
   // Speech bubble shown when you tap the Portrait.
   bubble: 'Hi!',
 

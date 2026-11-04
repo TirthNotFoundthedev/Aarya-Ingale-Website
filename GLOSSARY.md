@@ -13,3 +13,5 @@
 **Hero pose / Corner pose**: The two Portrait drawings. The Hero pose is the ¾ view used in the Hero, turned toward the viewer with both eyes visible. The Corner pose faces left toward the content in every later Scene.
 
 **Arc list**: Items (skills, interests or social links) placed on an arc just outside the Ring, sliding along it as you scroll, with labels always upright.
+
+**Loader / gate**: The full-screen gift Scene shown before the Hero. Its **gate** is the two-button confirmation (with sound / quietly) whose click unlocks audio and starts the unwrapping animation.
