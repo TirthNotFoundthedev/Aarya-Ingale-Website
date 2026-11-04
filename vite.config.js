@@ -10,8 +10,8 @@ export default defineConfig({
       name: 'content-meta',
       transformIndexHtml: (html) =>
         html
-          .replace('%TITLE%', escape(content.meta.title))
-          .replace('%DESCRIPTION%', escape(content.meta.description)),
+          .replaceAll('%TITLE%', escape(content.meta.title))
+          .replaceAll('%DESCRIPTION%', escape(content.meta.description)),
     },
   ],
 });
