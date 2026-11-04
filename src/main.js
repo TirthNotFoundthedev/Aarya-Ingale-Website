@@ -3,6 +3,7 @@ import { content } from './content.js';
 import { createRing, spinRingOnScroll } from './ring.js';
 import { playStage, STACKED_CONDITION } from './stage.js';
 import { arcList } from './arc-list.js';
+import { mountSoundToggle } from './spin-sfx.js';
 
 const isTodo = (value) => typeof value === 'string' && value.startsWith('TODO');
 
@@ -152,3 +153,4 @@ spinRingOnScroll(ring);
 playStage({ stage, ring, heroPortrait, cornerPortrait, heading, heroScene });
 arcList({ scene: interestsScene, list: interestsList });
 arcList({ scene: socialsScene, list: socialsList });
+mountSoundToggle();
