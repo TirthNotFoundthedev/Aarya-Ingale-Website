@@ -63,7 +63,7 @@ export function playBye({ scene, heading, heroPortrait }) {
 
   ScrollTrigger.create({
     trigger: scene,
-    start: 'top 0%',
+    start: 'top 40%', // reachable at the end of the page even when the Scene is only 100svh tall
     onEnter: () => {
       bubble.textContent = content.bye.bubble;
       if (reduced.matches) return;
@@ -75,7 +75,7 @@ export function playBye({ scene, heading, heroPortrait }) {
     onLeaveBack: () => {
       wave?.kill();
       heroPortrait.classList.remove('is-talking');
-      bubble.textContent = hello;
+      gsap.delayedCall(0.3, () => (bubble.textContent = hello)); // after the bubble has faded out
     },
   });
 }

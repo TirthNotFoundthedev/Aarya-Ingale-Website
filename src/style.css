@@ -518,6 +518,7 @@ img {
 
 .scene.scene--bye {
   min-height: 0;
+  height: 120vh;
   height: 120svh; /* the extra 20% lets the return finish even when a phone's address bar has hidden */
   padding: 0;
 }

@@ -22,7 +22,7 @@ The order is **Hero → Now → Interests & Skills → Socials → Bye**. The Po
 
 **Hero → Now transition:** the Ring travels to the bottom-right corner. The Portrait **drops out of the bottom of the screen and pops back up from the right**, already in the left-facing corner pose. This hides the swap between the two poses. On phones the new pose rises straight up from below instead. With `prefers-reduced-motion` there is no travel: halfway through the Hero the Ring and Portrait fade out and fade back in at the corner.
 
-**Socials → Bye transition:** the Hero move in reverse. Once the Socials Arc list has rolled out, the Corner pose drops out of the bottom, the Ring glides back to the Hero spot and the Hero pose pops straight up, on desktop and phone alike; the heading fades in as she lands. With `prefers-reduced-motion` it is the same crossfade as the Hero → Now swap, the other way. The Bye heading is fixed to the top of the screen so it sits exactly where the Hero's name did, whatever the phone's address bar is doing; the Scene itself is just 120svh of scroll runway.
+**Socials → Bye transition:** the Hero move in reverse. As the Socials Arc list rolls out, the Corner pose drops out of the bottom, the Ring glides back to the Hero spot and the Hero pose pops straight up, on desktop and phone alike; the heading fades in as she lands. With `prefers-reduced-motion` it is the same crossfade as the Hero → Now swap, the other way. The Bye heading is fixed to the top of the screen so it sits exactly where the Hero's name did, whatever the phone's address bar is doing; the Scene itself is just 120svh of scroll runway.
 
 **Other transitions** (Now → Interests → Socials): the Portrait stays put, the Ring keeps turning, and the content swaps.
 
