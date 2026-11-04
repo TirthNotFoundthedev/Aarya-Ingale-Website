@@ -5,6 +5,7 @@ import { playStage, STACKED_CONDITION } from './stage.js';
 import { arcList } from './arc-list.js';
 import { playLoader } from './loader.js';
 import { mountSoundToggle } from './spin-sfx.js';
+import { createByeScene, playBye } from './bye.js';
 
 const isTodo = (value) => typeof value === 'string' && value.startsWith('TODO');
 
@@ -145,15 +146,18 @@ const socialItems = socials.links.map((link) =>
 const socialsList = arcListOf('socials', socialItems);
 const socialsScene = arcScene('socials', socialItems.length, [sceneTitle('socials', socials.title)]);
 
+const { scene: byeScene, heading: byeHeading } = createByeScene();
+
 const arcLayer = el('div', { className: 'arc-layer' }, [interestsList, socialsList]);
 
 // The stage comes last so screen readers meet the name before the portrait; CSS puts it behind on desktop.
 // On stacked screens, the stage-fade overlay sits between the Scenes and the stage.
-document.querySelector('#app').append(heroScene, nowScene, interestsScene, socialsScene, stageFade, stage, arcLayer);
+document.querySelector('#app').append(heroScene, nowScene, interestsScene, socialsScene, byeScene, stageFade, stage, arcLayer);
 spinRingOnScroll(ring);
-playStage({ stage, ring, heroPortrait, cornerPortrait, heading, heroScene });
+playStage({ stage, ring, heroPortrait, cornerPortrait, heading, heroScene, byeScene });
 arcList({ scene: interestsScene, list: interestsList });
 arcList({ scene: socialsScene, list: socialsList });
+playBye({ scene: byeScene, heading: byeHeading, heroPortrait });
 // The page-load gate and unwrapping animation sit on top of the finished page; it is inert until they are gone.
 playLoader({ app: document.querySelector('#app'), images: [...document.querySelectorAll('.portrait img')] });
 mountSoundToggle();

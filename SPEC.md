@@ -6,7 +6,7 @@ Personal site for **Aarya Ingale**, a surprise gift from a friend. It's one long
 
 ## Scenes
 
-The order is **Hero → Now → Interests & Skills → Socials**. The Portrait and Ring stay on screen the whole time; the content changes around them. Reference sketches: [hero](wayfinder/assets/hero-sketch-v1.png), [now](wayfinder/assets/now-sketch-v1.png), [socials](wayfinder/assets/socials-sketch-v1.png).
+The order is **Hero → Now → Interests & Skills → Socials → Bye**. The Portrait and Ring stay on screen the whole time; the content changes around them. Reference sketches: [hero](wayfinder/assets/hero-sketch-v1.png), [now](wayfinder/assets/now-sketch-v1.png), [socials](wayfinder/assets/socials-sketch-v1.png).
 
 | Scene | Desktop | Phone |
 |---|---|---|
@@ -14,12 +14,15 @@ The order is **Hero → Now → Interests & Skills → Socials**. The Portrait a
 | **Now** ("What I'm upto right now") | Portrait + Ring sit in the **bottom-right corner**, cropped by the right and bottom edges, and she faces left toward the content. Ring radius is the smaller of 50% of the screen height and 40% of its width; its centre sits half a radius in from the right edge and 0.8 radius up from the bottom. Title at top-left, short overview text on the left (college, branch, year, current stuff). | Portrait + Ring at **bottom centre**, about **30%** of the screen height (Ring radius the smaller of 16.7% of the height and 45% of the width), with the content above. |
 | **Interests & Skills** | Same corner layout. Overview text on the left, and the skills and interests as an **Arc list** around the Ring. | Same as Now, with the Arc list curving over her head. |
 | **Socials** | Same corner layout. The links as an **Arc list** around the Ring. | Same as Interests & Skills. |
+| **Bye** | The site ends where it began: the Ring and the **Hero pose** return to the Hero layout (same size and place), with "Thanks for stopping by," and a big **Bye!** in the name's spot at the top. When she lands she says "See you!" in her speech bubble by herself (not under reduced motion), and again when tapped; scrolling back up restores "Hi!". | Same layout as the Hero, using the phone Hero rules. |
 
 **Phone column means phones and portrait tablets:** any screen narrower than 700px, or with an aspect ratio of 4/5 or narrower (width ÷ height), gets the bottom-centre layout. Every other screen gets the bottom-right corner layout. On phones the character sits above the text, and a blush fade from the bottom edge to mid-screen hides text scrolling up behind her, so it fades in from the middle.
 
 **Arc list:** the items sit on an arc just outside the Ring and slide along it as you scroll, like a turning dial. Labels always stay upright. The item at the left end of the arc is highlighted (slightly larger, gold outline).
 
 **Hero → Now transition:** the Ring travels to the bottom-right corner. The Portrait **drops out of the bottom of the screen and pops back up from the right**, already in the left-facing corner pose. This hides the swap between the two poses. On phones the new pose rises straight up from below instead. With `prefers-reduced-motion` there is no travel: halfway through the Hero the Ring and Portrait fade out and fade back in at the corner.
+
+**Socials → Bye transition:** the Hero move in reverse. As the Socials Arc list rolls out, the Corner pose drops out of the bottom, the Ring glides back to the Hero spot and the Hero pose pops straight up, on desktop and phone alike; the heading fades in as she lands. With `prefers-reduced-motion` it is the same crossfade as the Hero → Now swap, the other way. The Bye heading is fixed to the top of the screen so it sits exactly where the Hero's name did, whatever the phone's address bar is doing; the Scene itself is just 120svh of scroll runway.
 
 **Other transitions** (Now → Interests → Socials): the Portrait stays put, the Ring keeps turning, and the content swaps.
 

@@ -839,3 +839,26 @@ html.is-loading {
     transition: none;
   }
 }
+
+/* Bye scene (src/bye.js): runway for the Hero pose's return; the heading is fixed where the Hero's name sits. */
+
+.scene.scene--bye {
+  min-height: 0;
+  height: 120vh;
+  height: 120svh; /* the extra 20% lets the return finish even when a phone's address bar has hidden */
+  padding: 0;
+}
+
+.bye-heading {
+  position: fixed;
+  inset: var(--gutter) 0 auto;
+  padding: 0 var(--gutter);
+  text-align: center;
+  visibility: hidden; /* src/bye.js fades it in as she returns */
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scene.scene--bye {
+    height: 100svh;
+  }
+}
