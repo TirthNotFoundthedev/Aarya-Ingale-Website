@@ -1,10 +1,12 @@
 # Glossary
 
-**Portrait**: The paper-cutout illustration of Aarya in a ¾ view. Made of stacked paper layers.
+**Portrait**: The paper-cutout illustration of Aarya, one flat image per pose (a layered rig comes after Nov 3).
 
 **Ring**: The large, detailed mandala-style circle centred on the Portrait's head. In the Hero it's cropped by the bottom edge like a rising arch. It rotates as you scroll.
 
-**Scene**: One scroll-driven section of the site (Hero, About, Interests & Skills, Contact, maybe Gallery).
+**Scene**: One scroll-driven section of the site: Hero, Now, Interests & Skills, Socials. (A Gallery comes after Nov 3.)
+
+**Stage**: The fixed layer behind the Scenes that holds the Ring and the Portrait. It moves them from the Hero layout to the corner as you scroll, so they stay on screen in every Scene.
 
 **Content file**: The single file holding every piece of editable text, link and photo on the site.
 

@@ -1,5 +1,7 @@
 import './style.css';
 import { content } from './content.js';
+import { createRing, spinRingOnScroll } from './ring.js';
+import { playStage, STACKED_CONDITION } from './stage.js';
 
 const isTodo = (value) => typeof value === 'string' && value.startsWith('TODO');
 
@@ -16,14 +18,31 @@ function el(tag, { className, text, attrs } = {}, children = []) {
   return node;
 }
 
-function portrait(pose, { sizes }) {
+function portrait(pose, { sizes, priority }) {
   const { src, alt } = content.portrait[pose];
   const srcset = (ext) => `${src}-1200.${ext} 1200w, ${src}-1600.${ext} 1600w`;
-  return el('picture', { className: `portrait portrait--${pose}` }, [
-    el('source', { attrs: { type: 'image/avif', srcset: srcset('avif'), sizes } }),
-    el('source', { attrs: { type: 'image/webp', srcset: srcset('webp'), sizes } }),
-    el('img', { attrs: { src: `${src}-1200.webp`, alt, width: 1200, height: 1490, decoding: 'async' } }),
+  // A button, so she can be tapped, clicked or reached by keyboard; the picture's alt text names it.
+  const button = el('button', { className: `portrait portrait--${pose}`, attrs: { type: 'button' } }, [
+    el('picture', {}, [
+      el('source', { attrs: { type: 'image/avif', srcset: srcset('avif'), sizes } }),
+      el('source', { attrs: { type: 'image/webp', srcset: srcset('webp'), sizes } }),
+      el('img', { attrs: { src: `${src}-1200.webp`, alt, width: 1200, height: 1490, decoding: 'async', ...(priority && { fetchpriority: 'high' }) } }),
+    ]),
+    el('span', { className: 'sparkle', attrs: { 'aria-hidden': 'true' } }, [el('i'), el('i')]),
+    el('span', { className: 'bubble', text: content.bubble, attrs: { 'aria-hidden': 'true' } }),
   ]);
+  button.addEventListener('click', () => poke(button));
+  return button;
+}
+
+// Tap her: a "Hi!" bubble pops out and a sparkle flashes on her earring.
+const BUBBLE_MS = 1800;
+function poke(button) {
+  button.classList.remove('is-poked', 'is-talking');
+  void button.offsetWidth; // restart the animations on a quick second tap
+  button.classList.add('is-poked', 'is-talking');
+  clearTimeout(button._talk);
+  button._talk = setTimeout(() => button.classList.remove('is-talking'), BUBBLE_MS);
 }
 
 function scene(id, children) {
@@ -49,13 +68,22 @@ function itemList(className, items) {
 
 const { hero, now, interestsSkills, socials } = content;
 
-const heroScene = scene('hero', [
-  el('header', { className: 'hero-heading' }, [
-    el('p', { className: 'hero-greeting', text: hero.greeting }),
-    el('h1', { className: 'hero-name', text: content.name, attrs: { id: 'hero-title' } }),
-  ]),
-  portrait('hero', { sizes: '(min-width: 700px) 50vw, 90vw' }),
+const heading = el('header', { className: 'hero-heading' }, [
+  el('p', { className: 'hero-greeting', text: hero.greeting }),
+  el('h1', { className: 'hero-name', text: content.name, attrs: { id: 'hero-title' } }),
 ]);
+const heroScene = scene('hero', [heading]);
+
+// Ring and Portrait live on a fixed stage behind the Scenes; src/stage.js moves them as you scroll.
+const ring = createRing();
+// `sizes` follow the widths src/stage.js gives each pose, approximately: the Hero width also depends on the
+// name's height (~46vh wide, 48vh stacked), and the Corner width is its Ring radius ÷ 0.81.
+const heroPortrait = portrait('hero', { sizes: `${STACKED_CONDITION} min(110vw, 48vh, 640px), min(90vw, 46vh, 640px)`, priority: true });
+const cornerPortrait = portrait('corner', { sizes: `${STACKED_CONDITION} min(56vw, 21vh), min(49vw, 62vh)` });
+const stage = el('div', { className: 'stage' }, [ring, heroPortrait, cornerPortrait]);
+// On stacked screens (phones and portrait tablets), a fixed gradient overlay hides text scrolling up
+// behind the character so it fades in from the middle of the screen.
+const stageFade = el('div', { className: 'stage-fade', attrs: { 'aria-hidden': 'true' } });
 
 const nowScene = scene('now', [
   sceneTitle('now', now.title),
@@ -94,4 +122,8 @@ const socialsScene = scene('socials', [
   ),
 ]);
 
-document.querySelector('#app').append(heroScene, nowScene, interestsScene, socialsScene);
+// The stage comes last so screen readers meet the name before the portrait; CSS puts it behind on desktop.
+// On stacked screens, the stage-fade overlay sits between the Scenes and the stage.
+document.querySelector('#app').append(heroScene, nowScene, interestsScene, socialsScene, stageFade, stage);
+spinRingOnScroll(ring);
+playStage({ stage, ring, heroPortrait, cornerPortrait, heading, heroScene });

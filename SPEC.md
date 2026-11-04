@@ -10,14 +10,16 @@ The order is **Hero → Now → Interests & Skills → Socials**. The Portrait a
 
 | Scene | Desktop | Phone |
 |---|---|---|
-| **Hero** | "Hi! I'm" and **Aarya Ingale** centred at the top. A huge Ring centred on her head and cropped by the bottom edge like a rising arch. A head-and-shoulders bust of her rising from the bottom edge, bottom centre. | Same layout. Portrait + Ring take **50–70%** of the screen height. |
-| **Now** ("What I'm upto right now") | Portrait + Ring sit in the **bottom-right corner**, cropped by the right and bottom edges, and she faces left toward the content. Title at top-left, short overview text on the left (college, branch, year, current stuff). | Portrait + Ring at **bottom centre**, about **30%** of the screen height, with the content above. |
+| **Hero** | "Hi! I'm" and **Aarya Ingale** centred at the top. A huge Ring centred on her head and cropped by the bottom edge like a rising arch. A head-and-shoulders bust of her rising from the bottom edge, bottom centre. The Ring's top always clears the name, tails of the script letters included: on short screens she gets smaller rather than touching it. On screens too short to fit her under the name at all (about 110–150px tall or less, depending on screen width), she starts just below the bottom edge and rises into the corner as you scroll. Her portrait is at most 640px wide and 90% of the screen width, with the bottom 10% of the bust below the screen edge. | Same layout. Portrait + Ring take **50–70%** of the screen height, never more than 70%. The portrait may be up to 110% of the screen width (her shoulders crop a little), and still at most 640px. |
+| **Now** ("What I'm upto right now") | Portrait + Ring sit in the **bottom-right corner**, cropped by the right and bottom edges, and she faces left toward the content. Ring radius is the smaller of 50% of the screen height and 40% of its width; its centre sits half a radius in from the right edge and 0.8 radius up from the bottom. Title at top-left, short overview text on the left (college, branch, year, current stuff). | Portrait + Ring at **bottom centre**, about **30%** of the screen height (Ring radius the smaller of 16.7% of the height and 45% of the width), with the content above. |
 | **Interests & Skills** | Same corner layout. Overview text on the left, and the skills and interests as an **Arc list** around the Ring. | Same as Now, with the Arc list curving over her head. |
 | **Socials** | Same corner layout. The links as an **Arc list** around the Ring. | Same as Interests & Skills. |
 
+**Phone column means phones and portrait tablets:** any screen narrower than 700px, or with an aspect ratio of 4/5 or narrower (width ÷ height), gets the bottom-centre layout. Every other screen gets the bottom-right corner layout. On phones the character sits above the text, and a blush fade from the bottom edge to mid-screen hides text scrolling up behind her, so it fades in from the middle.
+
 **Arc list:** the items sit on an arc just outside the Ring and slide along it as you scroll, like a turning dial. Labels always stay upright. A suggestion still to try: highlight the item closest to the left end of the arc.
 
-**Hero → Now transition:** the Ring travels to the bottom-right corner. The Portrait **drops out of the bottom of the screen and pops back up from the right**, already in the left-facing corner pose. This hides the swap between the two poses.
+**Hero → Now transition:** the Ring travels to the bottom-right corner. The Portrait **drops out of the bottom of the screen and pops back up from the right**, already in the left-facing corner pose. This hides the swap between the two poses. On phones the new pose rises straight up from below instead. With `prefers-reduced-motion` there is no travel: halfway through the Hero the Ring and Portrait fade out and fade back in at the corner.
 
 **Other transitions** (Now → Interests → Socials): the Portrait stays put, the Ring keeps turning, and the content swaps.
 
@@ -34,7 +36,7 @@ The order is **Hero → Now → Interests & Skills → Socials**. The Portrait a
 
 - **Ring:** made of concentric bands. Neighbouring bands turn in **opposite directions at different speeds**, driven by scroll.
 - **Tap/click her:** a "Hi!" speech bubble pops out (white bubble, plum outline, Kalam font), and a sparkle flashes on her earring.
-- `prefers-reduced-motion`: no scroll-linked rotation; the content still works.
+- `prefers-reduced-motion`: no scroll-linked rotation, and the Hero → Now swap is a crossfade instead of the travel; the content still works.
 
 The bubble and sparkle already work in the prototype. Copy the behaviour from there.
 
@@ -51,6 +53,8 @@ The look is **mostly variant A** (light blush background, pink-led, flat paper s
 | Accent gold | `#e9c46a` |
 | Accent green | `#17563f` Paithani green (deep `#0e3b2e`) |
 | Accent magenta | `#c2185b` |
+| Pale pink (Ring centre) | `#fbd3df` |
+| Paper white (Ring centre, mirror diamonds) | `#fff6ef` |
 
 **Paper finish:** flat fills with soft drop shadows between layers and a faint paper texture.
 
@@ -64,7 +68,7 @@ The look is **mostly variant A** (light blush background, pink-led, flat paper s
 | Paragraphs | **Lora** |
 | Speech bubble | **Kalam** |
 
-**Ring mandala:** the design is still open. It gets decided in execution step 02, starting from a reference mandala the user is finding.
+**Ring mandala:** seven paper bands built from the user's reference mandalas (band list in [execution/02-ring-mandala.md](execution/02-ring-mandala.md) → Outcome). The Ring looks the same in every Scene: no recolouring or rearranging, only its position and size change.
 
 ## Content file
 

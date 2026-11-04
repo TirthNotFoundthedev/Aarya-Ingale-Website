@@ -8,6 +8,8 @@
   --paithani: #17563f;
   --paithani-deep: #0e3b2e;
   --magenta: #c2185b;
+  --pink-pale: #fbd3df;
+  --paper: #fff6ef;
 
   /* Fonts: SPEC.md → Visual language */
   --font-name: 'Allura', cursive;
@@ -58,10 +60,16 @@ img {
 
 .scene {
   position: relative;
+  z-index: 1; /* above the stage on desktop; below the fade and stage in the stacked layout */
+  pointer-events: none; /* empty parts of a Scene let taps through to the Portrait (step 04) */
   min-height: 100vh;
   min-height: 100svh;
   padding: var(--gutter);
   overflow: hidden;
+}
+
+.scene > * {
+  pointer-events: auto;
 }
 
 .scene-title {
@@ -91,18 +99,12 @@ img {
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding-bottom: 0;
-}
-
-.hero-heading {
-  position: relative;
-  z-index: 1;
 }
 
 .hero-greeting {
   margin: 0;
   font-family: var(--font-label);
-  font-size: clamp(1.25rem, 3vw, 2rem);
+  font-size: clamp(1.1rem, min(3vw, 4.5svh), 2rem);
   color: var(--plum);
 }
 
@@ -110,20 +112,202 @@ img {
   margin: 0;
   font-family: var(--font-name);
   font-weight: 400;
-  font-size: clamp(4rem, 13vw, 9rem);
+  font-size: clamp(2.5rem, min(11vw, 15svh), 7.5rem); /* shrinks on short screens so the Ring keeps its room */
   line-height: 1;
   color: var(--rani);
 }
 
-.portrait--hero {
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  translate: -50% 0;
-  width: min(90vw, 55svh, 40rem);
+/* ---------- Stage: Ring + Portrait, fixed behind the Scenes (src/stage.js) ---------- */
+
+.stage {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  visibility: hidden; /* until src/stage.js has placed everything */
 }
 
-/* Now, Interests & Skills, Socials: content on the left for now. */
+.stage.is-ready {
+  visibility: visible;
+}
+
+.stage > * {
+  position: absolute;
+  top: 100%; /* hang from the bottom edge; src/stage.js places them from there */
+  left: 0;
+  will-change: transform;
+}
+
+/* ---------- Portrait: tap for a "Hi!" bubble and an earring sparkle (src/main.js) ---------- */
+
+.portrait {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  pointer-events: auto; /* the stage itself ignores taps; only she catches them */
+  container-type: inline-size; /* width is set by src/stage.js; the bubble and sparkle scale with it (cqw) */
+  -webkit-tap-highlight-color: transparent;
+}
+
+.portrait:focus-visible {
+  outline: 3px solid var(--plum);
+  outline-offset: -3px;
+}
+
+.portrait .bubble {
+  position: absolute;
+  left: -2%;
+  top: -1%;
+  padding: 0.1em 0.5em 0.2em;
+  font: 14cqw/1.1 var(--font-bubble);
+  color: var(--plum);
+  background: #fff;
+  border: max(2px, 0.9cqw) solid var(--plum);
+  border-radius: 0.7em;
+  opacity: 0;
+  transform: scale(0.3);
+  transform-origin: 100% 100%; /* the tail corner, nearest her face */
+  transition: opacity 0.2s, transform 0.35s cubic-bezier(0.3, 1.6, 0.5, 1);
+  pointer-events: none;
+}
+
+.portrait .bubble::after {
+  content: '';
+  position: absolute;
+  right: 0.35em;
+  bottom: -0.42em;
+  width: 0.5em;
+  height: 0.5em;
+  background: #fff;
+  border: inherit;
+  border-top: 0;
+  border-left: 0;
+  transform: rotate(35deg) skew(-10deg);
+}
+
+.portrait.is-talking .bubble {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Two white four-point stars on the jhumka (centre of the dome, about (0.63, 0.62) of the art). */
+.portrait .sparkle i {
+  position: absolute;
+  width: 8cqw;
+  aspect-ratio: 1;
+  background: #fff;
+  clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.portrait .sparkle i:first-child {
+  left: 63%;
+  top: 61%;
+}
+
+.portrait .sparkle i:last-child {
+  left: 58%;
+  top: 66%;
+  width: 5cqw;
+  animation-delay: 0.25s;
+}
+
+.portrait.is-poked .sparkle i {
+  animation: sparkle 1.1s ease-out;
+}
+
+.portrait.is-poked .sparkle i:last-child {
+  animation-delay: 0.25s;
+}
+
+@keyframes sparkle {
+  0% { opacity: 0; transform: scale(0.2) rotate(0); }
+  30% { opacity: 1; transform: scale(1.15) rotate(30deg); }
+  100% { opacity: 0; transform: scale(0.4) rotate(90deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .portrait .bubble {
+    transform: none;
+    transition: opacity 0.2s;
+  }
+
+  .portrait.is-poked .sparkle i {
+    animation: sparkle-fade 1.1s ease-out;
+  }
+}
+
+@keyframes sparkle-fade {
+  0%, 100% { opacity: 0; }
+  30% { opacity: 1; }
+}
+
+/* Stacked layout fade: hidden on wide screens (desktop). */
+.stage-fade {
+  display: none;
+}
+
+/* Matches STACKED in src/stage.js: phones and portrait tablets.
+   Stage sits above Scenes and the fade overlay hides text scrolling up behind the character. */
+@media (width < 700px), (max-aspect-ratio: 4/5) {
+  .stage {
+    z-index: 3; /* above the fade overlay (2) and Scenes (1) */
+  }
+
+  .stage-fade {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 2; /* between Scenes (1) and stage (3) */
+    pointer-events: none;
+    background-color: var(--blush);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .29 0 0 0 0 .08 0 0 0 0 .19 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, transparent 50%, black 100%);
+    mask-image: linear-gradient(to bottom, transparent 0%, transparent 50%, black 100%);
+  }
+}
+
+/* ---------- Ring (src/ring.js) ---------- */
+
+.ring {
+  aspect-ratio: 1; /* width set by src/stage.js */
+}
+
+.ring-band {
+  position: absolute;
+  inset: 0;
+  will-change: transform;
+}
+
+.ring-band svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* Faint paper grain over the cut paper. */
+.ring::after {
+  content: '';
+  position: absolute;
+  inset: 6%; /* inside the scalloped edge */
+  border-radius: 50%;
+  opacity: 0.6;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .29 0 0 0 0 .08 0 0 0 0 .19 0 0 0 .12 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Now, Interests & Skills, Socials: content on the left, clear of the corner figure. */
+
+.scene:not(.scene--hero) {
+  padding-right: var(--figure-right, var(--gutter));
+  padding-bottom: var(--figure-bottom, var(--gutter));
+}
 
 .now-facts {
   display: grid;
